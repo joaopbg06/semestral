@@ -60,13 +60,14 @@ function SettingsScreen() {
     const toggleSwitch = () => {
         setIsToggled(prev => !prev);
     };
+
     return (
         <View style={{ flex: 0.9, justifyContent: 'center', alignItems: 'center', flexDirection: 'column' }}>
 
             <View style={config.perfil}>
 
                 <Image style={config.imagemAluno} source={require('../assets/img/alunoFt.png')}></Image>
-                <Text style={config.nomeAluno}>Nome do aluno</Text>
+                <Text style={config.nomeAluno}>Nome da nutricionista</Text>
             </View>
 
             <View style={config.contato}>
@@ -124,6 +125,30 @@ function SettingsScreen() {
     );
 }
 
+function Dashboard() {
+    return (
+        <View>
+            <Text>dashboard</Text>
+        </View>
+    );
+}
+
+function Chat() {
+    return (
+        <View>
+            <Text>Chat</Text>
+        </View>
+    );
+}
+
+function Laudo() {
+    return (
+        <View>
+            <Text>Laudo</Text>
+        </View>
+    );
+}
+
 const Tab = createBottomTabNavigator();
 
 export default function Acesso() {
@@ -133,37 +158,44 @@ export default function Acesso() {
                 tabBarIcon: ({ focused, color }) => {
                     let iconName;
 
+                    // Lógica para selecionar o ícone com base no nome da aba (route.name)
                     if (route.name === 'Home') {
                         iconName = focused ? 'home' : 'home-outline';
                     } else if (route.name === 'Settings') {
                         iconName = focused ? 'settings' : 'settings-outline';
+                    } else if (route.name === 'Dashboard') {
+                        iconName = focused ? 'people' : 'people-outline'; // Ícone para Dashboard
+                    } else if (route.name === 'Chatbox') {
+                        iconName = focused ? 'chatbubbles' : 'chatbubbles-outline'; // Ícone para Chatbox
+                    } else if (route.name === 'Laudo') {
+                        iconName = focused ? 'document-text' : 'document-text-outline'; // Ícone para Laudo
                     }
 
                     // Retorna o ícone apropriado da biblioteca Ionicons
                     return <Ionicons name={iconName} size={30} color={color} />;
                 },
                 tabBarActiveTintColor: '#fff', // Cor do texto e ícone ativo
-                tabBarInactiveTintColor: '#fff',  // Cor do texto e ícone inativo
-                tabBarStyle: {                     // Estilos para a barra de abas
-                    backgroundColor: '#FF3838',         // Cor de fundo da barra de abas
-                    borderTopColor: '#ccc',          // Cor da borda superior da barra
-                    borderTopWidth: 1,               // Largura da borda superior da barra
-                    height: 60,                       // Altura da barra de abas
-                },
-                tabBarLabelStyle: {                 // Estilos para os rótulos
-                    fontSize: 14,                     // Tamanho da fonte dos rótulos
-                    marginBottom: 5,                  // Margem inferior dos rótulos
+                tabBarInactiveTintColor: '#fff', // Cor do texto e ícone inativo
+                tabBarStyle: { // Estilos para a barra de abas
+                    backgroundColor: '#FF3838', // Cor de fundo da barra de abas
+                    borderTopColor: '#ccc', // Cor da borda superior da barra
+                    borderTopWidth: 1, // Largura da borda superior da barra
+                    height: 60, // Altura da barra de abas
                 },
                 tabBarLabelStyle: {
                     display: 'none', // Oculta os rótulos
                 },
-                tabBarIconStyle: {                  // Estilos para os ícones
-                    marginTop: 5,                     // Margem superior dos ícones
+                tabBarIconStyle: { // Estilos para os ícones
+                    marginTop: 5, // Margem superior dos ícones
                 }
             })}
         >
             <Tab.Screen name="Home" component={HomeScreen} options={{ headerShown: false }} />
+            <Tab.Screen name="Dashboard" component={Dashboard} options={{ headerShown: false }} />
+            <Tab.Screen name="Chatbox" component={Chat} options={{ headerShown: false }} />
+            <Tab.Screen name="Laudo" component={Laudo} options={{ headerShown: false }} />
             <Tab.Screen name="Settings" component={SettingsScreen} options={{ headerShown: false }} />
+
         </Tab.Navigator>
     );
 }
@@ -262,7 +294,7 @@ const index = StyleSheet.create({
         paddingHorizontal: 10,
         paddingVertical: 5,
     },
-    textoFiltro:{
+    textoFiltro: {
         fontSize: 12,
     },
     main: {
