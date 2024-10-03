@@ -12,13 +12,35 @@ import {
     KeyboardAvoidingView,
     Keyboard,
     TouchableWithoutFeedback,
-    Pressable
+    Pressable,
+    FlatList,
+    Modal
 } from 'react-native';
 
+import Adicionar from '../components/adicionar'
+import Contato from '../components/contato';
+import LaudoAluno from '../components/laudo';
 
+//paginas
 
-// Defina algumas telas exemplo para as suas tabs
 function HomeScreen() {
+    const [filtroAtivo, setFiltroAtivo] = useState('Geral');
+    const [isModalVisible, setModalVisible] = useState(false);
+
+    const handleFiltroPress = (filtro) => {
+        setFiltroAtivo(filtro);
+        console.log('O filtro é: ' + filtro);
+    };
+
+    const openModal = () => {
+        setModalVisible(true);
+    };
+
+
+    const closeModal = () => {
+        setModalVisible(false);
+    };
+
     return (
         <View style={{ flex: 1, alignItems: 'center' }}>
 
@@ -26,21 +48,33 @@ function HomeScreen() {
                 <Image style={index.logo} source={require('../assets/img/logo.png')}></Image>
                 <View style={index.linha1}></View>
                 <View style={index.filtroBox}>
-                    <View style={index.filtroAtivo}>
+                    <Pressable
+                        style={filtroAtivo === 'Geral' ? index.filtroAtivo : index.filtro}
+                        onPress={() => handleFiltroPress('Geral')}
+                    >
                         <Text style={index.textoFiltro}>Geral</Text>
-                    </View>
+                    </Pressable>
 
-                    <View style={index.filtro}>
+                    <Pressable
+                        style={filtroAtivo === 'Enquetes' ? index.filtroAtivo : index.filtro}
+                        onPress={() => handleFiltroPress('Enquetes')}
+                    >
                         <Text style={index.textoFiltro}>Enquetes</Text>
-                    </View>
+                    </Pressable>
 
-                    <View style={index.filtro}>
+                    <Pressable
+                        style={filtroAtivo === 'Cardápio' ? index.filtroAtivo : index.filtro}
+                        onPress={() => handleFiltroPress('Cardápio')}
+                    >
                         <Text style={index.textoFiltro}>Cardápio</Text>
-                    </View>
+                    </Pressable>
 
-                    <View style={index.filtro}>
+                    <Pressable
+                        style={filtroAtivo === 'Sugestões' ? index.filtroAtivo : index.filtro}
+                        onPress={() => handleFiltroPress('Sugestões')}
+                    >
                         <Text style={index.textoFiltro}>Sugestões</Text>
-                    </View>
+                    </Pressable>
 
                 </View>
                 <View style={index.linha2}></View>
@@ -48,6 +82,14 @@ function HomeScreen() {
 
             <View style={index.main}></View>
 
+
+            <Pressable onPress={openModal} style={index.botaoAdicionar}>
+                <Ionicons name={'add-outline'} size={30} color={'#fff'} />
+            </Pressable>
+
+            {isModalVisible && (
+                <Adicionar visible={isModalVisible} onClose={closeModal} />
+            )}
         </View>
 
     );
@@ -127,8 +169,8 @@ function SettingsScreen() {
 
 function Dashboard() {
     return (
-        <View>
-            <Text>dashboard</Text>
+        <View style={dash.conteiner}>
+
         </View>
     );
 }
@@ -142,12 +184,83 @@ function Chat() {
 }
 
 function Laudo() {
+
+    const [pesquisa, setPesquisa] = useState('');
+
+
+
+    const handleInputChange = (text) => {
+        setPesquisa(text);
+        console.log('Input na pesquisa:', text); // Para visualizar a entrada atual
+    };
+
+
+    const data = [
+        { id: 1, nome: 'Aluno1', Email: 'nome.sobrenome@portalsesisp.org.br', RM: '1234', telefone: '(+55) 11 12345-5678' },
+        { id: 2, nome: 'Aluno2', Email: 'nome.sobrenome@portalsesisp.org.br', RM: '1234', telefone: '(+55) 11 12345-5678' },
+        { id: 3, nome: 'Aluno3', Email: 'nome.sobrenome@portalsesisp.org.br', RM: '1234', telefone: '(+55) 11 12345-5678' },
+        { id: 4, nome: 'Aluno4', Email: 'nome.sobrenome@portalsesisp.org.br', RM: '1234', telefone: '(+55) 11 12345-5678' },
+        { id: 5, nome: 'Aluno5', Email: 'nome.sobrenome@portalsesisp.org.br', RM: '1234', telefone: '(+55) 11 12345-5678' },
+        { id: 6, nome: 'Aluno6', Email: 'nome.sobrenome@portalsesisp.org.br', RM: '1234', telefone: '(+55) 11 12345-5678' },
+        { id: 7, nome: 'Aluno7', Email: 'nome.sobrenome@portalsesisp.org.br', RM: '1234', telefone: '(+55) 11 12345-5678' },
+        { id: 8, nome: 'Aluno8', Email: 'nome.sobrenome@portalsesisp.org.br', RM: '1234', telefone: '(+55) 11 12345-5678' },
+        { id: 9, nome: 'Aluno9', Email: 'nome.sobrenome@portalsesisp.org.br', RM: '1234', telefone: '(+55) 11 12345-5678' },
+    ];
+
+    const [modalVisible, setModalVisible] = useState(false);  // Controle de exibição do modal
+    const [selectedContato, setSelectedContato] = useState(null);
+
+    const handlePressContato = (contato) => {
+        setSelectedContato(contato);  // Salva o contato selecionado
+        setModalVisible(true);  // Exibe o modal
+    };
+
     return (
-        <View>
-            <Text>Laudo</Text>
+        <View style={{ flex: 1, alignItems: 'center', justifyContent: 'flex-start' }}>
+
+            <View style={laudo.header}>
+                <Image style={laudo.logo} source={require('../assets/img/logo.png')}></Image>
+                <View style={laudo.linha1}></View>
+
+                <View style={laudo.pesquisa}>
+                    <TextInput
+                        style={laudo.input}
+                        value={pesquisa}
+                        onChangeText={handleInputChange}
+                        placeholder="Pesquise aqui..."
+                    />
+
+                    <Ionicons name={"search-sharp"} size={24} color={"#000"} />
+                </View>
+
+                <View style={laudo.linha2}></View>
+            </View>
+
+
+            <FlatList
+                style={{ flex: 1, width: '90%' }}
+                keyExtractor={(item) => String(item.id)}
+                data={data}
+                renderItem={({ item }) => <Contato data={item} onPress={() => handlePressContato(item)} />}
+
+            />
+
+            <Modal
+                visible={modalVisible}
+                animationType='fade'
+                onRequestClose={() => setModalVisible(false)}  // Fecha o modal ao pressionar o botão de voltar
+            >
+                <LaudoAluno
+                    contato={selectedContato}
+                    onClose={() => setModalVisible(false)}  // Função para fechar o modal
+                />
+            </Modal>
+
         </View>
     );
 }
+
+//bottons tab
 
 const Tab = createBottomTabNavigator();
 
@@ -199,6 +312,68 @@ export default function Acesso() {
         </Tab.Navigator>
     );
 }
+
+//styles
+
+const index = StyleSheet.create({
+    header: {
+        marginTop: 10,
+        width: '100%',
+        flex: 1,
+        alignItems: 'center'
+    },
+    linha1: {
+        marginTop: 6,
+        width: 280,
+        height: 2,
+        backgroundColor: '#ff3838'
+    },
+    linha2: {
+        width: "100%",
+        height: 2,
+        backgroundColor: '#ff3838'
+    },
+    filtroBox: {
+        flexDirection: 'row',
+        justifyContent: 'space-around',
+        width: '100%',
+        marginVertical: 8
+    },
+    filtro: {
+        borderRadius: 25,
+        backgroundColor: '#F3F3F3',
+        borderColor: '#9F9F9F',
+        borderWidth: 0.3,
+        paddingHorizontal: 10,
+        paddingVertical: 5,
+    },
+    filtroAtivo: {
+        borderRadius: 25,
+        backgroundColor: '#F9DCDC',
+        borderColor: '#F9DCDC',
+        borderWidth: 0.3,
+        paddingHorizontal: 10,
+        paddingVertical: 5,
+    },
+    textoFiltro: {
+        fontSize: 12,
+    },
+    main: {
+        flex: 4,
+    },
+    botaoAdicionar: {
+        width: 50,
+        height: 50,
+        borderRadius: 50,
+        backgroundColor: '#ff3838',
+        alignItems: 'center',
+        justifyContent: 'center',
+
+        position: 'absolute',
+        right: 10,
+        bottom: 10
+    }
+});
 
 const config = StyleSheet.create({
     perfil: {
@@ -254,11 +429,22 @@ const config = StyleSheet.create({
     }
 });
 
-const index = StyleSheet.create({
+const dash = StyleSheet.create({
+    conteiner: {
+
+    }
+});
+
+const chat = StyleSheet.create({
+    conteiner: {
+
+    }
+});
+
+const laudo = StyleSheet.create({
     header: {
         marginTop: 10,
         width: '100%',
-        flex: 1,
         alignItems: 'center'
     },
     linha1: {
@@ -272,32 +458,21 @@ const index = StyleSheet.create({
         height: 2,
         backgroundColor: '#ff3838'
     },
-    filtroBox: {
+    pesquisa: {
+        width: '90%',
         flexDirection: 'row',
-        justifyContent: 'space-around',
-        width: '100%',
-        marginVertical: 8
+        justifyContent: 'space-between',
+        alignItems: 'center',
+
+        backgroundColor: '#ECECEC',
+
+        borderRadius: 5,
+        paddingHorizontal: 5,
+        paddingVertical: 2,
+        marginVertical: 7,
     },
-    filtro: {
-        borderRadius: 25,
-        backgroundColor: '#F3F3F3',
-        borderColor: '#9F9F9F',
-        borderWidth: 0.3,
-        paddingHorizontal: 10,
-        paddingVertical: 5,
-    },
-    filtroAtivo: {
-        borderRadius: 25,
-        backgroundColor: '#F9DCDC',
-        borderColor: '#F9DCDC',
-        borderWidth: 0.3,
-        paddingHorizontal: 10,
-        paddingVertical: 5,
-    },
-    textoFiltro: {
-        fontSize: 12,
-    },
-    main: {
-        flex: 4,
-    },
+    input: {
+        height: 30,
+    }
+
 });

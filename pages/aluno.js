@@ -19,6 +19,11 @@ import {
 
 // Defina algumas telas exemplo para as suas tabs
 function HomeScreen() {
+    const [filtroAtivo, setFiltroAtivo] = useState('Geral');
+
+    const handleFiltroPress = (filtro) => {
+        setFiltroAtivo(filtro);
+    };
     return (
         <View style={{ flex: 1, alignItems: 'center' }}>
 
@@ -26,21 +31,33 @@ function HomeScreen() {
                 <Image style={index.logo} source={require('../assets/img/logo.png')}></Image>
                 <View style={index.linha1}></View>
                 <View style={index.filtroBox}>
-                    <View style={index.filtroAtivo}>
+                    <Pressable
+                        style={filtroAtivo === 'Geral' ? index.filtroAtivo : index.filtro}
+                        onPress={() => handleFiltroPress('Geral')}
+                    >
                         <Text style={index.textoFiltro}>Geral</Text>
-                    </View>
+                    </Pressable>
 
-                    <View style={index.filtro}>
+                    <Pressable
+                        style={filtroAtivo === 'Enquetes' ? index.filtroAtivo : index.filtro}
+                        onPress={() => handleFiltroPress('Enquetes')}
+                    >
                         <Text style={index.textoFiltro}>Enquetes</Text>
-                    </View>
+                    </Pressable>
 
-                    <View style={index.filtro}>
+                    <Pressable
+                        style={filtroAtivo === 'Cardápio' ? index.filtroAtivo : index.filtro}
+                        onPress={() => handleFiltroPress('Cardápio')}
+                    >
                         <Text style={index.textoFiltro}>Cardápio</Text>
-                    </View>
+                    </Pressable>
 
-                    <View style={index.filtro}>
+                    <Pressable
+                        style={filtroAtivo === 'Sugestões' ? index.filtroAtivo : index.filtro}
+                        onPress={() => handleFiltroPress('Sugestões')}
+                    >
                         <Text style={index.textoFiltro}>Sugestões</Text>
-                    </View>
+                    </Pressable>
 
                 </View>
                 <View style={index.linha2}></View>
@@ -262,7 +279,7 @@ const index = StyleSheet.create({
         paddingHorizontal: 10,
         paddingVertical: 5,
     },
-    textoFiltro:{
+    textoFiltro: {
         fontSize: 12,
     },
     main: {

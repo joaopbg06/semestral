@@ -33,16 +33,24 @@ export default function Bem_Vindo() {
             alert('Informe o login');
         }
         else if (login === 'aluno') {
-            navigation.navigate('senha');
+            navigation.navigate('senha', {
+                usuario: 'index',
+            });
         }
         else if (login === 'nutricionista') {
-            navigation.navigate('nutricionista');
+            navigation.navigate('senha', {
+                usuario: 'nutricionista',
+            });
         }
         else if (login === 'pais') {
-            navigation.navigate('pais');
+            navigation.navigate('senha', {
+                usuario: 'pais',
+            });
         }
         else if (login === 'funcionarios') {
-            navigation.navigate('funcionarios');
+            navigation.navigate('senha', {
+                usuario: 'funcionarios',
+            });
 
         }
     };
@@ -120,8 +128,9 @@ const styles = StyleSheet.create({
         justifyContent: 'flex-end',  // Para alinhar os elementos no final da tela
     },
     box: {
+        paddingVertical: 20,
         width: '100%',
-        flex: 0.6,
+        flex: 0.5,
         backgroundColor: '#fff',
         borderTopRightRadius: 30,
         borderTopLeftRadius: 30,
@@ -185,3 +194,8 @@ const styles = StyleSheet.create({
         fontSize: 15,
     }
 });
+
+
+
+
+

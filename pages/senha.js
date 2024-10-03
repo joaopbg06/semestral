@@ -11,9 +11,13 @@ import {
     ProgressBarAndroid // Barra de progresso nativa do Android
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import { useRoute } from '@react-navigation/native';
 
 export default function Bem_Vindo() {
     const navigation = useNavigation();
+    const route = useRoute(); // Inicialize o hook useRoute corretamente
+
+    const { usuario } = route.params;
 
     const [isChecked, setIsChecked] = useState(false);
     const [password, setPassword] = useState('');
@@ -21,6 +25,13 @@ export default function Bem_Vindo() {
     const [passwordVisible, setPasswordVisible] = useState(false);
     const [confirmPasswordVisible, setConfirmPasswordVisible] = useState(false);
     const [passwordStrength, setPasswordStrength] = useState(0);
+    const [criteriaStatus, setCriteriaStatus] = useState({
+        hasUpperCase: false,
+        hasLowerCase: false,
+        hasNumber: false,
+        hasSymbol: false,
+        hasMinLength: false,
+    });
 
     const toggleCheck = () => {
         setIsChecked(prevState => !prevState);
@@ -29,14 +40,31 @@ export default function Bem_Vindo() {
     const checkPasswordStrength = (password) => {
         let strength = 0;
 
-        // Critérios para aumentar a força da senha
-        if (/[A-Z]/.test(password)) strength++; // Letra maiúscula
-        if (/[a-z]/.test(password)) strength++; // Letra minúscula
-        if (/\d/.test(password)) strength++;    // Números
-        if (/[!@#$%^&*(),.?":{}|<>]/.test(password)) strength++; // Símbolos
-        if (password.length >= 8) strength++;   // 8 ou mais caracteres
+        const hasUpperCase = /[A-Z]/.test(password);
+        const hasLowerCase = /[a-z]/.test(password);
+        const hasNumber = /\d/.test(password);
+        const hasSymbol = /[!@#$%^&*(),.?":{}|<>]/.test(password);
+        const hasMinLength = password.length >= 8;
+
+        setCriteriaStatus({
+            hasUpperCase,
+            hasLowerCase,
+            hasNumber,
+            hasSymbol,
+            hasMinLength,
+        });
+
+        if (hasUpperCase) strength++;
+        if (hasLowerCase) strength++;
+        if (hasNumber) strength++;
+        if (hasSymbol) strength++;
+        if (hasMinLength) strength++;
 
         setPasswordStrength(strength);
+    };
+
+    const getTextColor = (isValid) => {
+        return isValid ? 'green' : 'red';
     };
 
     return (
@@ -80,6 +108,25 @@ export default function Bem_Vindo() {
                         color={passwordStrength < 3 ? "red" : passwordStrength < 4 ? "orange" : "green"} // Cor varia conforme a força
                     />
 
+                    {/* Textos dos critérios */}
+                    <View style={styles.criteriaContainer}>
+                        <Text style={[styles.criteriaText, { color: getTextColor(criteriaStatus.hasUpperCase) }]}>
+                            Letra Maiúscula
+                        </Text>
+                        <Text style={[styles.criteriaText, { color: getTextColor(criteriaStatus.hasLowerCase) }]}>
+                            Letra Minúscula
+                        </Text>
+                        <Text style={[styles.criteriaText, { color: getTextColor(criteriaStatus.hasNumber) }]}>
+                            Número
+                        </Text>
+                        <Text style={[styles.criteriaText, { color: getTextColor(criteriaStatus.hasSymbol) }]}>
+                            Símbolo
+                        </Text>
+                        <Text style={[styles.criteriaText, { color: getTextColor(criteriaStatus.hasMinLength) }]}>
+                            8 ou mais dígitos
+                        </Text>
+                    </View>
+
                     {/* Campo de confirmar senha com ícone de olho */}
                     <View style={styles.inputSenha}>
                         <Text style={styles.label}>Confirme a senha:</Text>
@@ -113,7 +160,7 @@ export default function Bem_Vindo() {
             </View>
 
             <View style={styles.botao}>
-                <Pressable onPress={() => navigation.navigate('index')} style={styles.botaoEntrar}>
+                <Pressable onPress={() => navigation.navigate(usuario)} style={styles.botaoEntrar}>
                     <Text style={styles.textoBotao}>Entrar</Text>
                 </Pressable>
             </View>
@@ -152,14 +199,18 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         borderBottomWidth: 1,
         borderBottomColor: '#ccc',
+        width: '100%',
+        justifyContent: 'center',
     },
     input: {
         flex: 1,
         backgroundColor: '#F5F5F5',
-        height: 30,
-        borderRadius: 3,
-        paddingHorizontal: 5,
+        height: 40,
+        width: '100%',
+        borderRadius: 5,
+        paddingHorizontal: 15,
         marginTop: 10,
+        fontSize: 18,
     },
     eyeIcon: {
         marginRight: 10,
@@ -195,5 +246,13 @@ const styles = StyleSheet.create({
     textoBotao: {
         color: '#fff',
         fontSize: 15,
+    },
+    criteriaContainer: {
+        marginTop: 20,
+        alignItems: 'flex-start',
+    },
+    criteriaText: {
+        fontSize: 16,
+        marginVertical: 5,
     },
 });
