@@ -19,9 +19,9 @@ const Adicionar = ({ visible, onClose }) => {
 
     // Estado para armazenar as opções da enquete
     const [options, setOptions] = useState(['', '']); // Começa com duas opções
+    const [numOptions, setNumOptions] = useState(2);  // Controla o número de opções
 
     const pickImageAsync = async () => {
-        // Limita a quantidade de imagens para 4
         if (selectedImages.length >= 4) {
             alert('Você só pode adicionar até 4 imagens.');
             return;
@@ -39,32 +39,31 @@ const Adicionar = ({ visible, onClose }) => {
         }
     };
 
-    // Função para remover uma imagem pelo índice
     const removeImage = (indexToRemove) => {
         setSelectedImages((prevImages) => prevImages.filter((_, index) => index !== indexToRemove));
     };
 
-    // Função para adicionar uma nova opção
-    const addOption = () => {
-        if (options.length < 10) { // Limita a 10 opções
-            setOptions((prevOptions) => [...prevOptions, '']);
-        }
-    };
-
-    // Função para atualizar uma opção específica
     const updateOption = (index, value) => {
         const newOptions = [...options];
         newOptions[index] = value;
         setOptions(newOptions);
     };
 
-    const removeLastOption = () => {
-        if (options.length > 2) { // Mantém pelo menos duas opções
-            setOptions((prevOptions) => prevOptions.slice(0, -1));
-        } else {
-            alert('Você deve ter pelo menos duas opções.');
+
+    const incrementOptions = () => {
+        if (numOptions < 10) {  // Limite de 10 opções
+            setNumOptions(numOptions + 1);
+            setOptions([...options, '']);  // Adiciona uma nova opção vazia
         }
     };
+
+    const decrementOptions = () => {
+        if (numOptions > 2) {  // Mínimo de 2 opções
+            setNumOptions(numOptions - 1);
+            setOptions(options.slice(0, -1));  // Remove a última opção
+        }
+    };
+
 
     return (
         <Modal
@@ -99,7 +98,6 @@ const Adicionar = ({ visible, onClose }) => {
                             selectedItemLabelStyle={styles.selectedItemLabel}
                         />
 
-                        {/* Renderiza a interface com base na opção selecionada */}
                         {value === 'opcao1' ? (
                             <>
                                 <View style={styles.textAreaContainer}>
@@ -115,7 +113,6 @@ const Adicionar = ({ visible, onClose }) => {
                                     </Pressable>
                                 </View>
 
-                                {/* Exibe as imagens selecionadas */}
                                 <View style={styles.imagePreviewContainer}>
                                     {selectedImages.map((imageUri, index) => (
                                         <View key={index} style={styles.imageWrapper}>
@@ -134,12 +131,27 @@ const Adicionar = ({ visible, onClose }) => {
                                 </View>
                             </>
                         ) : (
-                            // Interface alternativa para outras opções
                             <View style={styles.otherOptionContainer}>
                                 <TextInput
                                     style={styles.titulo}
                                     placeholder="Digite o título..."
                                 />
+
+                                <View style={styles.numInputContainer}>
+                                    <Pressable onPress={decrementOptions} style={styles.arrowButton}>
+                                        <Ionicons name="remove-circle-outline" size={24} color="#727272" />
+                                    </Pressable>
+                                    <TextInput
+                                        style={styles.numInput}
+                                        value={String(numOptions)}  // Exibe o número de opções
+                                        keyboardType="numeric"
+                                        editable={false}  // Desabilita edição direta
+                                    />
+                                    <Pressable onPress={incrementOptions} style={styles.arrowButton}>
+                                        <Ionicons name="add-circle-outline" size={24} color="#727272" />
+                                    </Pressable>
+                                </View>
+
 
                                 <ScrollView
                                     style={styles.enquete}
@@ -158,12 +170,6 @@ const Adicionar = ({ visible, onClose }) => {
                                         </View>
                                     ))}
                                 </ScrollView>
-
-                                {/* Botão para adicionar nova opção */}
-                                <View style={styles.buttonContainer}>
-                                    
-                                    
-                                </View>
                             </View>
                         )}
                     </View>
@@ -184,19 +190,7 @@ const styles = StyleSheet.create({
         width: '100%',
         marginTop: 10,
     },
-    removeOptionButton: {
-        marginTop: 10,
-        backgroundColor: '#ff3838',
-        padding: 10,
-        borderRadius: 5,
-        alignItems: 'center',
-        flex: 1,
-        marginLeft: 5, // Para dar espaço entre os botões
-    },
-    removeOptionText: {
-        color: '#fff',
-        fontSize: 15,
-    },
+    
     enquete: {
         width: '100%',
         maxHeight: 150, // Altura máxima do ScrollView
@@ -216,17 +210,6 @@ const styles = StyleSheet.create({
         borderColor: '#727272',
         width: '90%',
         marginLeft: 5,
-    },
-    addOptionButton: {
-        marginTop: 10,
-        backgroundColor: '#ff3838',
-        padding: 10,
-        borderRadius: 5,
-        alignItems: 'center',
-    },
-    addOptionText: {
-        color: '#fff',
-        fontSize: 15,
     },
     modalContainer: {
         flex: 1,
@@ -269,7 +252,7 @@ const styles = StyleSheet.create({
     },
     titulo: {
         width: '100%',
-        height: 'auto',
+        height: 50,
         backgroundColor: '#f0f0f0',
         borderRadius: 10,
         paddingHorizontal: 10,
@@ -305,6 +288,7 @@ const styles = StyleSheet.create({
         backgroundColor: '#F0F0F0',
         borderRadius: 10,
         textAlignVertical: 'top', // Alinha o texto no topo do TextArea
+        minHeight: 200,
     },
     attachButton: {
         position: 'absolute',
@@ -361,6 +345,33 @@ const styles = StyleSheet.create({
         fontSize: 16,
         color: '#333',
         textAlign: 'center',
+    },
+    numInput: {
+        width: '100%',
+        height: 40,
+        backgroundColor: '#f0f0f0',
+        borderRadius: 10,
+        paddingHorizontal: 10,
+        textAlign: 'center',
+    },
+    numInputContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginVertical: 10,
+    },
+    numInput: {
+        width: 50,
+        height: 40,
+        textAlign: 'center',
+        borderWidth: 1,
+        borderColor: '#ccc',
+        borderRadius: 5,
+        marginHorizontal: 10,
+        fontSize: 18,
+    },
+    arrowButton: {
+        padding: 5,
     },
 });
 

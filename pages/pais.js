@@ -20,36 +20,54 @@ import {
 // Defina algumas telas exemplo para as suas tabs
 function HomeScreen() {
     return (
-        <View style={{ flex: 1, alignItems: 'center' }}>
-
+        <View style={index.conteiner}>
             <View style={index.header}>
                 <Image style={index.logo} source={require('../assets/img/logo.png')}></Image>
                 <View style={index.linha1}></View>
-                <View style={index.filtroBox}>
-                    <View style={index.filtroAtivo}>
-                        <Text style={index.textoFiltro}>Geral</Text>
-                    </View>
-
-                    <View style={index.filtro}>
-                        <Text style={index.textoFiltro}>Enquetes</Text>
-                    </View>
-
-                    <View style={index.filtro}>
-                        <Text style={index.textoFiltro}>Cardápio</Text>
-                    </View>
-
-                    <View style={index.filtro}>
-                        <Text style={index.textoFiltro}>Sugestões</Text>
-                    </View>
-
-                </View>
-                <View style={index.linha2}></View>
             </View>
 
-            <View style={index.main}></View>
+
+            <View style={index.perfil}>
+
+                <Image style={index.imagemAluno} source={require('../assets/img/alunoFt.png')}></Image>
+                <Text style={index.nomeAluno}>Nome do Aluno</Text>
+            </View>
+
+            <View style={index.contato}>
+
+                <Text style={index.titulo}>contato</Text>
+
+                <View>
+                    <View style={index.box}>
+                        <View style={index.a}>
+                            <Ionicons name={'call'} size={24} color={'#000'} />
+                            <Text style={index.desc}> Telefone </Text>
+                        </View>
+                        <Text style={index.assunto}> (+55) 11 12345-6789 </Text>
+                    </View>
+
+                    <View style={index.box}>
+                        <View style={index.a}>
+                            <Ionicons name={'mail'} size={24} color={'#000'} />
+                            <Text style={index.desc}> Email </Text>
+                        </View>
+                        <Text style={index.assunto}> nome.sobrenome@portalsesisp.org.br </Text>
+                    </View>
+                </View>
+
+            </View>
+
+            <View style={index.botao}>
+                <Pressable onPress={() => console.log('opa')} style={index.botaoEntrar}>
+                    <Text style={index.textoBotao}>Enviar Laudo</Text>
+                    <Ionicons name={'arrow-up'} size={24} color={'#fff'} />
+                </Pressable>
+            </View>
+
+
+
 
         </View>
-
     );
 }
 
@@ -67,7 +85,7 @@ function SettingsScreen() {
             <View style={config.perfil}>
 
                 <Image style={config.imagemAluno} source={require('../assets/img/alunoFt.png')}></Image>
-                <Text style={config.nomeAluno}>Nome da nutricionista</Text>
+                <Text style={config.nomeAluno}>Nome do Pai/Mãe</Text>
             </View>
 
             <View style={config.contato}>
@@ -125,14 +143,6 @@ function SettingsScreen() {
     );
 }
 
-function Dashboard() {
-    return (
-        <View>
-            <Text>dashboard</Text>
-        </View>
-    );
-}
-
 function Chat() {
     return (
         <View>
@@ -141,13 +151,6 @@ function Chat() {
     );
 }
 
-function Laudo() {
-    return (
-        <View>
-            <Text>Laudo</Text>
-        </View>
-    );
-}
 
 const Tab = createBottomTabNavigator();
 
@@ -191,9 +194,8 @@ export default function Acesso() {
             })}
         >
             <Tab.Screen name="Home" component={HomeScreen} options={{ headerShown: false }} />
-            <Tab.Screen name="Dashboard" component={Dashboard} options={{ headerShown: false }} />
+
             <Tab.Screen name="Chatbox" component={Chat} options={{ headerShown: false }} />
-            <Tab.Screen name="Laudo" component={Laudo} options={{ headerShown: false }} />
             <Tab.Screen name="Settings" component={SettingsScreen} options={{ headerShown: false }} />
 
         </Tab.Navigator>
@@ -258,7 +260,6 @@ const index = StyleSheet.create({
     header: {
         marginTop: 10,
         width: '100%',
-        flex: 1,
         alignItems: 'center'
     },
     linha1: {
@@ -267,37 +268,78 @@ const index = StyleSheet.create({
         height: 2,
         backgroundColor: '#ff3838'
     },
-    linha2: {
-        width: "100%",
-        height: 2,
-        backgroundColor: '#ff3838'
+    conteiner: {
+        flex: 1,
     },
-    filtroBox: {
-        flexDirection: 'row',
-        justifyContent: 'space-around',
+    botao: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center' // Espaçamento fora do botão (opcional)
+    },
+    botaoEntrar: {
+        flexDirection: 'row', // Alinha o texto e o ícone horizontalmente
+        alignItems: 'center', // Alinha verticalmente ao centro
+        justifyContent: 'center', // Centraliza o conteúdo dentro do botão
+        backgroundColor: '#ff3838', // Cor de fundo do botão
+        paddingVertical: 10, // Espaçamento interno vertical
+        paddingHorizontal: 20, // Espaçamento interno horizontal
+        borderRadius: 8, // Bordas arredondadas
+        width: "80%",
+    },
+    textoBotao: {
+        color: '#fff', // Cor do texto
+        fontSize: 16, // Tamanho da fonte
+        marginRight: 10, // Espaçamento entre o texto e o ícone
+    },
+    perfil: {
         width: '100%',
-        marginVertical: 8
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginTop: 40
     },
-    filtro: {
-        borderRadius: 25,
-        backgroundColor: '#F3F3F3',
-        borderColor: '#9F9F9F',
-        borderWidth: 0.3,
-        paddingHorizontal: 10,
-        paddingVertical: 5,
+    nomeAluno: {
+        marginTop: 10,
+        fontSize: 20,
+        color: '#000'
     },
-    filtroAtivo: {
-        borderRadius: 25,
-        backgroundColor: '#F9DCDC',
-        borderColor: '#F9DCDC',
-        borderWidth: 0.3,
-        paddingHorizontal: 10,
-        paddingVertical: 5,
+    contato: {
+        flex: 1,
+        alignItems: 'center',
+        justifyContent: 'space-between',
+
     },
-    textoFiltro: {
-        fontSize: 12,
+    box: {
+        flexDirection: 'row',
+        width: "100%",
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        paddingVertical: 10,
+        paddingHorizontal: 15,
+        borderTopWidth: 0.5,         // Largura da borda superior
+        borderBottomWidth: 0.5,      // Largura da borda inferior
+        borderTopColor: 'rgba(0, 0, 0, 0.2)',    // Cor da borda superior
+        borderBottomColor: 'rgba(0, 0, 0, 0.2)', // Cor da borda inferior    
     },
-    main: {
-        flex: 4,
+    titulo: {
+        fontSize: 14,
+        color: '#727272',
+        marginVertical: 20
     },
+    a: {
+        flexDirection: 'row',
+        alignItems: 'center',
+    },
+    desc: {
+        fontSize: 13
+    },
+    assunto: {
+        color: '#727272',
+        fontSize: 12
+    },
+    config: {
+        flex: 1,
+        alignItems: 'center',
+        justifyContent: 'space-between',
+    }
+
 });

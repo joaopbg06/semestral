@@ -12,44 +12,89 @@ import {
     KeyboardAvoidingView,
     Keyboard,
     TouchableWithoutFeedback,
-    Pressable
+    Pressable,
+    FlatList,
+    Modal
 } from 'react-native';
 
+import Contato from '../components/contato';
+import LaudoAluno from '../components/laudo';
 
 
 // Defina algumas telas exemplo para as suas tabs
 function HomeScreen() {
+    const [pesquisa, setPesquisa] = useState('');
+
+
+
+    const handleInputChange = (text) => {
+        setPesquisa(text);
+        console.log('Input na pesquisa:', text); // Para visualizar a entrada atual
+    };
+
+
+    const data = [
+        { id: 1, nome: 'Aluno1', Email: 'nome.sobrenome@portalsesisp.org.br', RM: '1234', telefone: '(+55) 11 12345-5678' },
+        { id: 2, nome: 'Aluno2', Email: 'nome.sobrenome@portalsesisp.org.br', RM: '1234', telefone: '(+55) 11 12345-5678' },
+        { id: 3, nome: 'Aluno3', Email: 'nome.sobrenome@portalsesisp.org.br', RM: '1234', telefone: '(+55) 11 12345-5678' },
+        { id: 4, nome: 'Aluno4', Email: 'nome.sobrenome@portalsesisp.org.br', RM: '1234', telefone: '(+55) 11 12345-5678' },
+        { id: 5, nome: 'Aluno5', Email: 'nome.sobrenome@portalsesisp.org.br', RM: '1234', telefone: '(+55) 11 12345-5678' },
+        { id: 6, nome: 'Aluno6', Email: 'nome.sobrenome@portalsesisp.org.br', RM: '1234', telefone: '(+55) 11 12345-5678' },
+        { id: 7, nome: 'Aluno7', Email: 'nome.sobrenome@portalsesisp.org.br', RM: '1234', telefone: '(+55) 11 12345-5678' },
+        { id: 8, nome: 'Aluno8', Email: 'nome.sobrenome@portalsesisp.org.br', RM: '1234', telefone: '(+55) 11 12345-5678' },
+        { id: 9, nome: 'Aluno9', Email: 'nome.sobrenome@portalsesisp.org.br', RM: '1234', telefone: '(+55) 11 12345-5678' },
+    ];
+
+    const [modalVisible, setModalVisible] = useState(false);  // Controle de exibição do modal
+    const [selectedContato, setSelectedContato] = useState(null);
+
+    const handlePressContato = (contato) => {
+        setSelectedContato(contato);  // Salva o contato selecionado
+        setModalVisible(true);  // Exibe o modal
+    };
+
     return (
-        <View style={{ flex: 1, alignItems: 'center' }}>
+        <View style={{ flex: 1, alignItems: 'center', justifyContent: 'flex-start' }}>
 
-            <View style={index.header}>
-                <Image style={index.logo} source={require('../assets/img/logo.png')}></Image>
-                <View style={index.linha1}></View>
-                <View style={index.filtroBox}>
-                    <View style={index.filtroAtivo}>
-                        <Text style={index.textoFiltro}>Geral</Text>
-                    </View>
+            <View style={laudo.header}>
+                <Image style={laudo.logo} source={require('../assets/img/logo.png')}></Image>
+                <View style={laudo.linha1}></View>
 
-                    <View style={index.filtro}>
-                        <Text style={index.textoFiltro}>Enquetes</Text>
-                    </View>
+                <View style={laudo.pesquisa}>
+                    <TextInput
+                        style={laudo.input}
+                        value={pesquisa}
+                        onChangeText={handleInputChange}
+                        placeholder="Pesquise aqui..."
+                    />
 
-                    <View style={index.filtro}>
-                        <Text style={index.textoFiltro}>Cardápio</Text>
-                    </View>
-
-                    <View style={index.filtro}>
-                        <Text style={index.textoFiltro}>Sugestões</Text>
-                    </View>
-
+                    <Ionicons name={"search-sharp"} size={24} color={"#000"} />
                 </View>
-                <View style={index.linha2}></View>
+
+                <View style={laudo.linha2}></View>
             </View>
 
-            <View style={index.main}></View>
+
+            <FlatList
+                style={{ flex: 1, width: '90%' }}
+                keyExtractor={(item) => String(item.id)}
+                data={data}
+                renderItem={({ item }) => <Contato data={item} onPress={() => handlePressContato(item)} />}
+
+            />
+
+            <Modal
+                visible={modalVisible}
+                animationType='fade'
+                onRequestClose={() => setModalVisible(false)}  // Fecha o modal ao pressionar o botão de voltar
+            >
+                <LaudoAluno
+                    contato={selectedContato}
+                    onClose={() => setModalVisible(false)}  // Função para fechar o modal
+                />
+            </Modal>
 
         </View>
-
     );
 }
 
@@ -60,14 +105,13 @@ function SettingsScreen() {
     const toggleSwitch = () => {
         setIsToggled(prev => !prev);
     };
-
     return (
         <View style={{ flex: 0.9, justifyContent: 'center', alignItems: 'center', flexDirection: 'column' }}>
 
             <View style={config.perfil}>
 
                 <Image style={config.imagemAluno} source={require('../assets/img/alunoFt.png')}></Image>
-                <Text style={config.nomeAluno}>Nome da nutricionista</Text>
+                <Text style={config.nomeAluno}>Nome do Funcionario</Text>
             </View>
 
             <View style={config.contato}>
@@ -125,30 +169,6 @@ function SettingsScreen() {
     );
 }
 
-function Dashboard() {
-    return (
-        <View>
-            <Text>dashboard</Text>
-        </View>
-    );
-}
-
-function Chat() {
-    return (
-        <View>
-            <Text>Chat</Text>
-        </View>
-    );
-}
-
-function Laudo() {
-    return (
-        <View>
-            <Text>Laudo</Text>
-        </View>
-    );
-}
-
 const Tab = createBottomTabNavigator();
 
 export default function Acesso() {
@@ -158,44 +178,37 @@ export default function Acesso() {
                 tabBarIcon: ({ focused, color }) => {
                     let iconName;
 
-                    // Lógica para selecionar o ícone com base no nome da aba (route.name)
                     if (route.name === 'Home') {
                         iconName = focused ? 'home' : 'home-outline';
                     } else if (route.name === 'Settings') {
                         iconName = focused ? 'settings' : 'settings-outline';
-                    } else if (route.name === 'Dashboard') {
-                        iconName = focused ? 'people' : 'people-outline'; // Ícone para Dashboard
-                    } else if (route.name === 'Chatbox') {
-                        iconName = focused ? 'chatbubbles' : 'chatbubbles-outline'; // Ícone para Chatbox
-                    } else if (route.name === 'Laudo') {
-                        iconName = focused ? 'document-text' : 'document-text-outline'; // Ícone para Laudo
                     }
 
                     // Retorna o ícone apropriado da biblioteca Ionicons
                     return <Ionicons name={iconName} size={30} color={color} />;
                 },
                 tabBarActiveTintColor: '#fff', // Cor do texto e ícone ativo
-                tabBarInactiveTintColor: '#fff', // Cor do texto e ícone inativo
-                tabBarStyle: { // Estilos para a barra de abas
-                    backgroundColor: '#FF3838', // Cor de fundo da barra de abas
-                    borderTopColor: '#ccc', // Cor da borda superior da barra
-                    borderTopWidth: 1, // Largura da borda superior da barra
-                    height: 60, // Altura da barra de abas
+                tabBarInactiveTintColor: '#fff',  // Cor do texto e ícone inativo
+                tabBarStyle: {                     // Estilos para a barra de abas
+                    backgroundColor: '#FF3838',         // Cor de fundo da barra de abas
+                    borderTopColor: '#ccc',          // Cor da borda superior da barra
+                    borderTopWidth: 1,               // Largura da borda superior da barra
+                    height: 60,                       // Altura da barra de abas
+                },
+                tabBarLabelStyle: {                 // Estilos para os rótulos
+                    fontSize: 14,                     // Tamanho da fonte dos rótulos
+                    marginBottom: 5,                  // Margem inferior dos rótulos
                 },
                 tabBarLabelStyle: {
                     display: 'none', // Oculta os rótulos
                 },
-                tabBarIconStyle: { // Estilos para os ícones
-                    marginTop: 5, // Margem superior dos ícones
+                tabBarIconStyle: {                  // Estilos para os ícones
+                    marginTop: 5,                     // Margem superior dos ícones
                 }
             })}
         >
             <Tab.Screen name="Home" component={HomeScreen} options={{ headerShown: false }} />
-            <Tab.Screen name="Dashboard" component={Dashboard} options={{ headerShown: false }} />
-            <Tab.Screen name="Chatbox" component={Chat} options={{ headerShown: false }} />
-            <Tab.Screen name="Laudo" component={Laudo} options={{ headerShown: false }} />
             <Tab.Screen name="Settings" component={SettingsScreen} options={{ headerShown: false }} />
-
         </Tab.Navigator>
     );
 }
@@ -254,11 +267,10 @@ const config = StyleSheet.create({
     }
 });
 
-const index = StyleSheet.create({
+const laudo = StyleSheet.create({
     header: {
         marginTop: 10,
         width: '100%',
-        flex: 1,
         alignItems: 'center'
     },
     linha1: {
@@ -272,32 +284,22 @@ const index = StyleSheet.create({
         height: 2,
         backgroundColor: '#ff3838'
     },
-    filtroBox: {
+    pesquisa: {
+        width: '90%',
         flexDirection: 'row',
-        justifyContent: 'space-around',
-        width: '100%',
-        marginVertical: 8
+        justifyContent: 'space-between',
+        alignItems: 'center',
+
+        backgroundColor: '#ECECEC',
+
+        borderRadius: 5,
+        paddingHorizontal: 5,
+        paddingVertical: 2,
+        marginVertical: 7,
     },
-    filtro: {
-        borderRadius: 25,
-        backgroundColor: '#F3F3F3',
-        borderColor: '#9F9F9F',
-        borderWidth: 0.3,
-        paddingHorizontal: 10,
-        paddingVertical: 5,
-    },
-    filtroAtivo: {
-        borderRadius: 25,
-        backgroundColor: '#F9DCDC',
-        borderColor: '#F9DCDC',
-        borderWidth: 0.3,
-        paddingHorizontal: 10,
-        paddingVertical: 5,
-    },
-    textoFiltro: {
-        fontSize: 12,
-    },
-    main: {
-        flex: 4,
-    },
+    input: {
+        height: 30,
+    }
+
 });
+

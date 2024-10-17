@@ -197,5 +197,3 @@ const styles = StyleSheet.create({
 
 
 
-
-

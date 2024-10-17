@@ -36,12 +36,12 @@ export default function Routes() {
             <Stack.Screen
                 name="pais"
                 component={pais}
-            // options={{ headerShown: false }} 
+            options={{ headerShown: false }} 
             />
             <Stack.Screen
                 name="funcionarios"
                 component={funcionarios}
-            // options={{ headerShown: false }} 
+            options={{ headerShown: false }} 
             />
 
 
