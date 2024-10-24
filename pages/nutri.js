@@ -164,6 +164,7 @@ function SettingsScreen() {
                     </View>
                 </View>
             </View>
+
         </View >
     );
 }

@@ -63,10 +63,6 @@ function HomeScreen() {
                     <Ionicons name={'arrow-up'} size={24} color={'#fff'} />
                 </Pressable>
             </View>
-
-
-
-
         </View>
     );
 }
