@@ -10,7 +10,7 @@ const ContatoPai = ({ data, onPress }) => {
                     <Image style={styles.fotoAluno} source={require('../assets/img/alunoFt.png')} />
                     <View style={{ marginLeft: 10 }}>
                         <Text style={styles.text}> {data.nome} </Text>
-                        <Text style={styles.subText}> {data.ultimaMensagem} </Text>
+                        <Text style={styles.subText}> {data.ultimaMensagem ? data.ultimaMensagem : "Ainda não conversaram"} </Text>
                     </View>
                 </View>
             </Pressable>

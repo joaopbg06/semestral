@@ -1,32 +1,33 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, TouchableOpacity, FlatList, StyleSheet } from 'react-native';
 
-const ChatApp = () => {
+const ChatApp = ({ contato, mensagens, onClose, onSendMessage }) => {
     // Simulação de mensagens em um array
-    const [messages, setMessages] = useState([
-        { id: '1', text: 'Olá! Como você está?', sender: 'outro' },
-        { id: '2', text: 'Oi! Estou bem, e você?', sender: 'me' },
-        { id: '3', text: 'Estou ótimo, obrigado por perguntar!', sender: 'outro' },
-    ]);
-
+    const [messages, setMessages] = useState(mensagens);
     const [newMessage, setNewMessage] = useState('');
+
+    useEffect(() => {
+        setMessages(mensagens);
+    }, [mensagens]);
 
     // Usuário atual
     const currentUser = 'me';
 
     // Função para adicionar uma nova mensagem
     const handleSendMessage = () => {
-        if (newMessage.trim() === '') return;
+        if (newMessage.trim() === '') return; // Verifica se a mensagem não está vazia
 
         const newMsg = {
-            id: Math.random().toString(),
+            id: Math.random().toString(), // Gera um ID único
             text: newMessage,
             sender: currentUser,
         };
 
-        setMessages([...messages, newMsg]);
-        setNewMessage('');
+        // Chama a função passada pelo pai para enviar a nova mensagem
+        onSendMessage(contato.id, newMsg); // Passa o ID do contato e a nova mensagem
+        setNewMessage(''); // Limpa o campo de entrada
     };
+
 
     // Função para renderizar cada item da lista de mensagens
     const renderMessage = ({ item }) => {
@@ -47,9 +48,17 @@ const ChatApp = () => {
 
     return (
         <View style={styles.container}>
+            {/* Cabeçalho do chat com o nome do contato */}
+            <View style={styles.header}>
+                <Text style={styles.headerText}>Chat com {contato?.nome}</Text>
+                <TouchableOpacity onPress={onClose}>
+                    <Text style={styles.closeButtonText}>Fechar</Text>
+                </TouchableOpacity>
+            </View>
+
             {/* Lista de mensagens */}
             <FlatList
-                data={messages}
+                data={messages.filter(msg => msg.text !== "")}
                 keyExtractor={(item) => item.id}
                 renderItem={renderMessage}
                 style={styles.messageList}
