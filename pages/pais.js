@@ -1,3 +1,5 @@
+
+
 import React, { useState } from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Ionicons } from '@expo/vector-icons';
@@ -12,8 +14,13 @@ import {
     KeyboardAvoidingView,
     Keyboard,
     TouchableWithoutFeedback,
-    Pressable
+    Pressable,
+    FlatList,
+    Modal
 } from 'react-native';
+
+import ChatApp from '../components/chat';
+import ContatoPai from '../components/contatoPai';
 
 
 
@@ -140,11 +147,135 @@ function SettingsScreen() {
 }
 
 function Chat() {
+
+    const [pesquisa, setPesquisa] = useState('');
+
+    const handleInputChange = (text) => {
+        setPesquisa(text);
+        console.log('Input na pesquisa:', text); // Para visualizar a entrada atual
+    };
+
+    const [data, setData] = useState([
+        { id: 1, nome: 'Pai do aluno1', ultimaMensagem: 'Estou com dúvidas sobre a tarefa do aluno 1', telefone: '(+55) 11 12345-5678' },
+        { id: 2, nome: 'Pai do aluno2', ultimaMensagem: '', telefone: '(+55) 11 12345-5678' },
+        { id: 3, nome: 'Pai do aluno3', ultimaMensagem: '', telefone: '(+55) 11 12345-5678' },
+        { id: 4, nome: 'Pai do aluno4', ultimaMensagem: 'Estou com dúvidas sobre a tarefa do aluno 4', telefone: '(+55) 11 12345-5678' },
+        { id: 5, nome: 'Pai do aluno5', ultimaMensagem: '', telefone: '(+55) 11 12345-5678' }
+    ]);
+
+    const filteredData = data.filter(item => {
+        // Se houver uma pesquisa, retorne true se o nome contém a pesquisa
+        if (pesquisa) {
+            return item.nome.toLowerCase().includes(pesquisa.toLowerCase());
+        } else {
+            // Caso contrário, retorne true se ultimaMensagem não estiver vazia
+            return item.ultimaMensagem !== '';
+        }
+    });
+
+    const [mensagens, setMensagens] = useState({
+        1: [
+            { id: 1, text: `Olá, eu sou o 1. Como você está?`, sender: "me" },
+            { id: 2, text: "Estou bem, obrigado!", sender: "outro" },
+            { id: 3, text: `Estou com dúvidas sobre a tarefa do aluno 1`, sender: "me" }
+        ],
+        2: [
+            { id: 1, text: ``, sender: "" },
+        ],
+        3: [
+            { id: 1, text: ``, sender: "" },
+        ],
+        4: [
+            { id: 1, text: `Olá, eu sou o 4. Como você está?`, sender: "me" },
+            { id: 2, text: "Estou bem, obrigado!", sender: "me" },
+            { id: 3, text: `Estou com dúvidas sobre a tarefa do aluno 4`, sender: "me" }
+        ],
+        5: [
+            { id: 1, text: ``, sender: "" },
+        ]
+    });
+
+    const handleSendMessage = (id, newMessage) => {
+        // Verifica se há mensagens para o contato específico
+        if (mensagens[id]) {
+            // Adiciona a nova mensagem ao array de mensagens
+            const updatedMessages = [...mensagens[id], newMessage];
+
+            // Atualiza as mensagens do contato
+            setMensagens(prevMensagens => ({
+                ...prevMensagens,
+                [id]: updatedMessages // Atualiza as mensagens do contato
+            }));
+
+            // Atualiza o valor de ultimaMensagem dentro de data
+            setData(prevData => {
+                return prevData.map(contato => {
+                    if (contato.id === id) {
+                        return {
+                            ...contato,
+                            ultimaMensagem: newMessage.text // Atualiza a ultimaMensagem
+                        };
+                    }
+                    return contato; // Retorna os outros contatos inalterados
+                });
+            });
+        }
+    };
+
+    const [modalVisible, setModalVisible] = useState(false);  // Controle de exibição do modal
+    const [selectedContato, setSelectedContato] = useState(null);
+
+    const handlePressContato = (contato) => {
+        setSelectedContato(contato);  // Salva o contato selecionado
+        setModalVisible(true);  // Exibe o modal
+    };
+
     return (
-        <View>
-            <Text>Chat</Text>
+        <View style={{ flex: 1, alignItems: 'center', justifyContent: 'flex-start' }}>
+
+            <View style={chat.header}>
+                <Image style={chat.logo} source={require('../assets/img/logo.png')}></Image>
+                <View style={chat.linha1}></View>
+
+                <View style={chat.pesquisa}>
+
+                    <TextInput
+                        style={chat.input}
+                        value={pesquisa}
+                        onChangeText={handleInputChange}
+                        placeholder="Pesquise aqui..."
+                    />
+
+                    <Ionicons name={"search-sharp"} size={24} color={"#000"} />
+
+                </View>
+
+                <View style={chat.linha2}></View>
+            </View>
+
+            <FlatList style={{ flex: 1, width: '90%' }}
+                keyExtractor={(item) => String(item.id)}
+                data={filteredData}
+                renderItem={({ item }) => (
+                    <ContatoPai data={item} onPress={() => handlePressContato(item)} />
+                )}
+            />
+
+            <Modal
+                visible={modalVisible}
+                animationType='fade'
+                onRequestClose={() => setModalVisible(false)}
+            >
+                <ChatApp
+                    contato={selectedContato}
+                    mensagens={mensagens[selectedContato?.id]}
+                    onSendMessage={handleSendMessage}
+                    onClose={() => setModalVisible(false)}
+                />
+            </Modal>
         </View>
     );
+
 }
 
 
@@ -338,4 +469,39 @@ const index = StyleSheet.create({
         justifyContent: 'space-between',
     }
 
+});
+
+const chat = StyleSheet.create({
+    header: {
+        marginTop: 10,
+        width: '100%',
+        alignItems: 'center'
+    },
+    linha1: {
+        marginTop: 6,
+        width: 280,
+        height: 2,
+        backgroundColor: '#ff3838'
+    },
+    linha2: {
+        width: "100%",
+        height: 2,
+        backgroundColor: '#ff3838'
+    },
+    pesquisa: {
+        width: '90%',
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+
+        backgroundColor: '#ECECEC',
+
+        borderRadius: 5,
+        paddingHorizontal: 5,
+        paddingVertical: 2,
+        marginVertical: 7,
+    },
+    input: {
+        height: 30
+    }
 });

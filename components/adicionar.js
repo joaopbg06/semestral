@@ -6,9 +6,11 @@ import * as ImagePicker from 'expo-image-picker';
 import Feather from '@expo/vector-icons/Feather';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 
-const Adicionar = ({ visible, onClose }) => {
+const Adicionar = ({ visible, onClose, onSubmit }) => {
+
     const [open, setOpen] = useState(false);
     const [value, setValue] = useState('opcao1');
+
     const [items, setItems] = useState([
         { label: 'Opção 1', value: 'opcao1' },
         { label: 'Opção 2', value: 'opcao2' },
@@ -33,7 +35,9 @@ const Adicionar = ({ visible, onClose }) => {
         });
 
         if (!result.canceled) {
-            setSelectedImages([...selectedImages, result.assets[0].uri]);
+            const newImageUri = result.assets[0].uri;
+            console.log("Imagem selecionada URI:", newImageUri); // Verifica o URI da imagem selecionada
+            setSelectedImages([...selectedImages, newImageUri]);
         } else {
             alert('Você não selecionou nenhuma imagem.');
         }
@@ -64,6 +68,19 @@ const Adicionar = ({ visible, onClose }) => {
         }
     };
 
+    const [texto, setTexto] = useState('');
+
+
+    const handleEnviar = () => {
+        const novoPost = {
+            texto,
+            imagens: selectedImages,
+        };
+        console.log("Novo post criado:", novoPost); // Verifica o conteúdo do post antes de enviar
+        onSubmit(novoPost);
+        setTexto('');
+        setSelectedImages([]);
+    };
 
     return (
         <Modal
@@ -107,6 +124,8 @@ const Adicionar = ({ visible, onClose }) => {
                                         placeholderTextColor="#999"
                                         multiline={true}
                                         numberOfLines={6}
+                                        value={texto}
+                                        onChangeText={setTexto}
                                     />
                                     <Pressable onPress={pickImageAsync} style={styles.attachButton}>
                                         <Feather name="paperclip" size={20} color="#727272" />
@@ -152,7 +171,6 @@ const Adicionar = ({ visible, onClose }) => {
                                     </Pressable>
                                 </View>
 
-
                                 <ScrollView
                                     style={styles.enquete}
                                     contentContainerStyle={styles.enqueteContent}
@@ -174,7 +192,7 @@ const Adicionar = ({ visible, onClose }) => {
                         )}
                     </View>
 
-                    <Pressable onPress={onClose} style={styles.botaoEntrar}>
+                    <Pressable onPress={handleEnviar} style={styles.botaoEntrar}>
                         <Text style={styles.textoBotao}>Enviar</Text>
                     </Pressable>
                 </View>
@@ -190,7 +208,7 @@ const styles = StyleSheet.create({
         width: '100%',
         marginTop: 10,
     },
-    
+
     enquete: {
         width: '100%',
         maxHeight: 150, // Altura máxima do ScrollView

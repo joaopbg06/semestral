@@ -1,4 +1,6 @@
 
+
+
 import React, { useState } from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Ionicons } from '@expo/vector-icons';
@@ -21,12 +23,15 @@ import {
 import Adicionar from '../components/adicionar'
 import Contato from '../components/contato';
 import LaudoAluno from '../components/laudo';
+import ContatoPai from '../components/contatoPai';
+import ChatApp from '../components/chat';
 
 //paginas
 
 function HomeScreen() {
     const [filtroAtivo, setFiltroAtivo] = useState('Geral');
     const [isModalVisible, setModalVisible] = useState(false);
+    const [posts, setPosts] = useState([]);
 
     const handleFiltroPress = (filtro) => {
         setFiltroAtivo(filtro);
@@ -42,54 +47,88 @@ function HomeScreen() {
         setModalVisible(false);
     };
 
+    const adicionarPost = (novoPost) => {
+        console.log("Post recebido do modal:", novoPost); // Verifica o post recebido do modal
+        setPosts([...posts, novoPost]);
+        setModalVisible(false);
+    };
+
+
+
+
     return (
         <View style={{ flex: 1, alignItems: 'center' }}>
 
-            <View style={index.header}>
-                <Image style={index.logo} source={require('../assets/img/logo.png')}></Image>
-                <View style={index.linha1}></View>
-                <View style={index.filtroBox}>
+            <View style={home.header}>
+                <Image style={home.logo} source={require('../assets/img/logo.png')}></Image>
+                <View style={home.linha1}></View>
+                <View style={home.filtroBox}>
                     <Pressable
-                        style={filtroAtivo === 'Geral' ? index.filtroAtivo : index.filtro}
+                        style={filtroAtivo === 'Geral' ? home.filtroAtivo : home.filtro}
                         onPress={() => handleFiltroPress('Geral')}
                     >
-                        <Text style={index.textoFiltro}>Geral</Text>
+                        <Text style={home.textoFiltro}>Geral</Text>
                     </Pressable>
 
                     <Pressable
-                        style={filtroAtivo === 'Enquetes' ? index.filtroAtivo : index.filtro}
+                        style={filtroAtivo === 'Enquetes' ? home.filtroAtivo : home.filtro}
                         onPress={() => handleFiltroPress('Enquetes')}
                     >
-                        <Text style={index.textoFiltro}>Enquetes</Text>
+                        <Text style={home.textoFiltro}>Enquetes</Text>
                     </Pressable>
 
                     <Pressable
-                        style={filtroAtivo === 'Cardápio' ? index.filtroAtivo : index.filtro}
+                        style={filtroAtivo === 'Cardápio' ? home.filtroAtivo : home.filtro}
                         onPress={() => handleFiltroPress('Cardápio')}
                     >
-                        <Text style={index.textoFiltro}>Cardápio</Text>
+                        <Text style={home.textoFiltro}>Cardápio</Text>
                     </Pressable>
 
                     <Pressable
-                        style={filtroAtivo === 'Sugestões' ? index.filtroAtivo : index.filtro}
+                        style={filtroAtivo === 'Sugestões' ? home.filtroAtivo : home.filtro}
                         onPress={() => handleFiltroPress('Sugestões')}
                     >
-                        <Text style={index.textoFiltro}>Sugestões</Text>
+                        <Text style={home.textoFiltro}>Sugestões</Text>
                     </Pressable>
 
                 </View>
-                <View style={index.linha2}></View>
+                <View style={home.linha2}></View>
             </View>
 
-            <View style={index.main}></View>
+            <View style={home.main}>
+
+                <FlatList
+                    data={posts}
+                    keyExtractor={(item, home) => home.toString()}
+                    renderItem={({ item }) => {
+                        console.log("Renderizando item na FlatList:", item); // Verifica o item sendo renderizado
+                        return (
+                            <View style={home.postContainer}>
+                                <Text style={home.postText}>{item.texto}</Text>
+                                <View style={home.imagesContainer}>
+                                    {item.imagens.map((imageUri, index) => (
+                                        <Image key={index} source={{ uri: imageUri }} style={home.postImage} />
+                                    ))}
+                                </View>
+                            </View>
+                        );
+                    }}
+                />
 
 
-            <Pressable onPress={openModal} style={index.botaoAdicionar}>
+            </View>
+
+
+            <Pressable onPress={openModal} style={home.botaoAdicionar}>
                 <Ionicons name={'add-outline'} size={30} color={'#fff'} />
             </Pressable>
 
             {isModalVisible && (
-                <Adicionar visible={isModalVisible} onClose={closeModal} />
+                <Adicionar
+                    visible={isModalVisible}
+                    onClose={closeModal}
+                    onSubmit={adicionarPost}
+                />
             )}
         </View>
 
@@ -178,11 +217,135 @@ function Dashboard() {
 }
 
 function Chat() {
+
+    const [pesquisa, setPesquisa] = useState('');
+
+    const handleInputChange = (text) => {
+        setPesquisa(text);
+        console.log('Input na pesquisa:', text); // Para visualizar a entrada atual
+    };
+
+    const [data, setData] = useState([
+        { id: 1, nome: 'Pai do aluno1', ultimaMensagem: 'Estou com dúvidas sobre a tarefa do aluno 1', telefone: '(+55) 11 12345-5678' },
+        { id: 2, nome: 'Pai do aluno2', ultimaMensagem: '', telefone: '(+55) 11 12345-5678' },
+        { id: 3, nome: 'Pai do aluno3', ultimaMensagem: '', telefone: '(+55) 11 12345-5678' },
+        { id: 4, nome: 'Pai do aluno4', ultimaMensagem: 'Estou com dúvidas sobre a tarefa do aluno 4', telefone: '(+55) 11 12345-5678' },
+        { id: 5, nome: 'Pai do aluno5', ultimaMensagem: '', telefone: '(+55) 11 12345-5678' }
+    ]);
+
+    const filteredData = data.filter(item => {
+        // Se houver uma pesquisa, retorne true se o nome contém a pesquisa
+        if (pesquisa) {
+            return item.nome.toLowerCase().includes(pesquisa.toLowerCase());
+        } else {
+            // Caso contrário, retorne true se ultimaMensagem não estiver vazia
+            return item.ultimaMensagem !== '';
+        }
+    });
+
+    const [mensagens, setMensagens] = useState({
+        1: [
+            { id: 1, text: `Olá, eu sou o 1. Como você está?`, sender: "me" },
+            { id: 2, text: "Estou bem, obrigado!", sender: "outro" },
+            { id: 3, text: `Estou com dúvidas sobre a tarefa do aluno 1`, sender: "me" }
+        ],
+        2: [
+            { id: 1, text: ``, sender: "" },
+        ],
+        3: [
+            { id: 1, text: ``, sender: "" },
+        ],
+        4: [
+            { id: 1, text: `Olá, eu sou o 4. Como você está?`, sender: "me" },
+            { id: 2, text: "Estou bem, obrigado!", sender: "me" },
+            { id: 3, text: `Estou com dúvidas sobre a tarefa do aluno 4`, sender: "me" }
+        ],
+        5: [
+            { id: 1, text: ``, sender: "" },
+        ]
+    });
+
+    const handleSendMessage = (id, newMessage) => {
+        // Verifica se há mensagens para o contato específico
+        if (mensagens[id]) {
+            // Adiciona a nova mensagem ao array de mensagens
+            const updatedMessages = [...mensagens[id], newMessage];
+
+            // Atualiza as mensagens do contato
+            setMensagens(prevMensagens => ({
+                ...prevMensagens,
+                [id]: updatedMessages // Atualiza as mensagens do contato
+            }));
+
+            // Atualiza o valor de ultimaMensagem dentro de data
+            setData(prevData => {
+                return prevData.map(contato => {
+                    if (contato.id === id) {
+                        return {
+                            ...contato,
+                            ultimaMensagem: newMessage.text // Atualiza a ultimaMensagem
+                        };
+                    }
+                    return contato; // Retorna os outros contatos inalterados
+                });
+            });
+        }
+    };
+
+    const [modalVisible, setModalVisible] = useState(false);  // Controle de exibição do modal
+    const [selectedContato, setSelectedContato] = useState(null);
+
+    const handlePressContato = (contato) => {
+        setSelectedContato(contato);  // Salva o contato selecionado
+        setModalVisible(true);  // Exibe o modal
+    };
+
     return (
-        <View>
-            <Text>Chat</Text>
+        <View style={{ flex: 1, alignItems: 'center', justifyContent: 'flex-start' }}>
+
+            <View style={chat.header}>
+                <Image style={chat.logo} source={require('../assets/img/logo.png')}></Image>
+                <View style={chat.linha1}></View>
+
+                <View style={chat.pesquisa}>
+
+                    <TextInput
+                        style={chat.input}
+                        value={pesquisa}
+                        onChangeText={handleInputChange}
+                        placeholder="Pesquise aqui..."
+                    />
+
+                    <Ionicons name={"search-sharp"} size={24} color={"#000"} />
+
+                </View>
+
+                <View style={chat.linha2}></View>
+            </View>
+
+            <FlatList style={{ flex: 1, width: '90%' }}
+                keyExtractor={(item) => String(item.id)}
+                data={filteredData}
+                renderItem={({ item }) => (
+                    <ContatoPai data={item} onPress={() => handlePressContato(item)} />
+                )}
+            />
+
+            <Modal
+                visible={modalVisible}
+                animationType='fade'
+                onRequestClose={() => setModalVisible(false)}
+            >
+                <ChatApp
+                    contato={selectedContato}
+                    mensagens={mensagens[selectedContato?.id]}
+                    onSendMessage={handleSendMessage}
+                    onClose={() => setModalVisible(false)}
+                />
+            </Modal>
         </View>
     );
+
 }
 
 function Laudo() {
@@ -317,7 +480,7 @@ export default function Acesso() {
 
 //styles
 
-const index = StyleSheet.create({
+const home = StyleSheet.create({
     header: {
         marginTop: 10,
         width: '100%',
@@ -374,7 +537,28 @@ const index = StyleSheet.create({
         position: 'absolute',
         right: 10,
         bottom: 10
-    }
+    },
+    postContainer: {
+        backgroundColor: '#f9f9f9',
+        padding: 10,
+        borderRadius: 8,
+        marginBottom: 10,
+    },
+    postText: {
+        fontSize: 16,
+        marginBottom: 10,
+    },
+    imagesContainer: {
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+    },
+    postImage: {
+        width: 80,
+        height: 80,
+        borderRadius: 5,
+        marginRight: 5,
+        marginBottom: 5,
+    },
 });
 
 const config = StyleSheet.create({
@@ -438,8 +622,37 @@ const dash = StyleSheet.create({
 });
 
 const chat = StyleSheet.create({
-    conteiner: {
+    header: {
+        marginTop: 10,
+        width: '100%',
+        alignItems: 'center'
+    },
+    linha1: {
+        marginTop: 6,
+        width: 280,
+        height: 2,
+        backgroundColor: '#ff3838'
+    },
+    linha2: {
+        width: "100%",
+        height: 2,
+        backgroundColor: '#ff3838'
+    },
+    pesquisa: {
+        width: '90%',
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
 
+        backgroundColor: '#ECECEC',
+
+        borderRadius: 5,
+        paddingHorizontal: 5,
+        paddingVertical: 2,
+        marginVertical: 7,
+    },
+    input: {
+        height: 30
     }
 });
 
@@ -478,5 +691,6 @@ const laudo = StyleSheet.create({
     }
 
 });
+
 
 

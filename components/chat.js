@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, TouchableOpacity, FlatList, StyleSheet } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, FlatList, StyleSheet, Image } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 
 const ChatApp = ({ contato, mensagens, onClose, onSendMessage }) => {
     // Simulação de mensagens em um array
@@ -50,11 +51,20 @@ const ChatApp = ({ contato, mensagens, onClose, onSendMessage }) => {
         <View style={styles.container}>
             {/* Cabeçalho do chat com o nome do contato */}
             <View style={styles.header}>
-                <Text style={styles.headerText}>Chat com {contato?.nome}</Text>
+
                 <TouchableOpacity onPress={onClose}>
-                    <Text style={styles.closeButtonText}>Fechar</Text>
+                    <Ionicons name={'arrow-back-outline'} size={20} color={'#000'} />
                 </TouchableOpacity>
+
+                <Image style={styles.imagemAluno} source={require('../assets/img/alunoFt.png')}></Image>
+
+                <View style={{ marginLeft: 10 }}>
+                    <Text style={styles.text}> {contato.nome} </Text>
+                    <Text style={styles.subText}> {contato.telefone} </Text>
+                </View>
+
             </View>
+            <View style={styles.linha}></View>
 
             {/* Lista de mensagens */}
             <FlatList
@@ -74,7 +84,7 @@ const ChatApp = ({ contato, mensagens, onClose, onSendMessage }) => {
                     style={styles.textInput}
                 />
                 <TouchableOpacity style={styles.sendButton} onPress={handleSendMessage}>
-                    <Text style={styles.sendButtonText}>Enviar</Text>
+                    <Ionicons name={'arrow-up-outline'} size={20} color={'#fff'} />
                 </TouchableOpacity>
             </View>
         </View>
@@ -84,12 +94,13 @@ const ChatApp = ({ contato, mensagens, onClose, onSendMessage }) => {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#f5f5f5',
+        backgroundColor: '#fff',
         paddingHorizontal: 10,
         paddingTop: 20,
     },
     messageList: {
         flex: 1,
+        marginHorizontal: 10
     },
     messageContainer: {
         padding: 10,
@@ -98,11 +109,17 @@ const styles = StyleSheet.create({
         maxWidth: '70%',
     },
     myMessage: {
-        backgroundColor: '#d1ffd1',
+        backgroundColor: '#ECECEC',
+        borderWidth: 1,
+        borderRadius: 25,
+        borderColor: '#ECECEC',
         alignSelf: 'flex-end',
     },
     otherMessage: {
-        backgroundColor: '#e0e0e0',
+        backgroundColor: '#fff',
+        borderWidth: 1,
+        borderRadius: 25,
+        borderColor: '#ECECEC',
         alignSelf: 'flex-start',
     },
     myMessageText: {
@@ -123,19 +140,44 @@ const styles = StyleSheet.create({
         paddingHorizontal: 15,
         paddingVertical: 10,
         borderWidth: 1,
-        borderColor: '#ddd',
+        borderColor: '#ECECEC',
     },
     sendButton: {
         marginLeft: 10,
-        backgroundColor: '#4caf50',
+        backgroundColor: '#FF3838',
         borderRadius: 20,
         paddingVertical: 10,
-        paddingHorizontal: 15,
+        paddingHorizontal: 10,
     },
     sendButtonText: {
         color: '#fff',
         fontWeight: 'bold',
     },
+    header: {
+        flexDirection: 'row',
+        alignItems: 'center',
+    },
+    imagemAluno: {
+        marginLeft: 10,
+        width: 45,
+        height: 45
+    },
+    text: {
+        fontSize: 14,
+        color: '#000'
+    },
+    subText: {
+        fontSize: 12,
+        color: '#727272'
+    },
+    linha: {
+        marginVertical: 10,
+        width: '100%',
+        height: 0.7,
+        borderWidth: 0.7,
+        borderColor: '#ff0000',
+    }
+
 });
 
 export default ChatApp;
