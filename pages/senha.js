@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
@@ -8,7 +9,7 @@ import {
     Image,
     TextInput,
     Pressable,
-    ProgressBarAndroid // Barra de progresso nativa do Android
+    Animated
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { useRoute } from '@react-navigation/native';
@@ -32,6 +33,25 @@ export default function Bem_Vindo() {
         hasSymbol: false,
         hasMinLength: false,
     });
+    const progressBarWidth = `${(passwordStrength / 5) * 100}%`;
+    const [progressWidth] = useState(new Animated.Value(0));
+
+    const animateProgressBar = (strength) => {
+        const newWidth = (strength / 5) * 100;
+
+        Animated.timing(progressWidth, {
+            toValue: newWidth,
+            duration: 300, // Duração da transição em milissegundos
+            useNativeDriver: false, // Como estamos animando a largura, useNativeDriver deve ser falso
+        }).start();
+    };
+
+    // Chamar a função de animação toda vez que a força da senha mudar
+    React.useEffect(() => {
+        animateProgressBar(passwordStrength);
+    }, [passwordStrength]);
+
+
 
     const toggleCheck = () => {
         setIsChecked(prevState => !prevState);
@@ -63,6 +83,25 @@ export default function Bem_Vindo() {
         setPasswordStrength(strength);
     };
 
+    // Função para definir a cor da barra com base na força da senha
+    const getProgressBarColor = (strength) => {
+        switch (strength) {
+            case 1:
+                return '#ff4d4d'; // Vermelho
+            case 2:
+                return '#ff9933'; // Laranja
+            case 3:
+                return '#ffcc00'; // Amarelo
+            case 4:
+                return '#99cc33'; // Verde-claro
+            case 5:
+                return '#339900'; // Verde-escuro
+            default:
+                return '#E6E6E6'; // Cinza para zero critério
+        }
+    };
+
+
     const getTextColor = (isValid) => {
         return isValid ? 'green' : 'red';
     };
@@ -75,11 +114,13 @@ export default function Bem_Vindo() {
             </View>
 
             <View style={styles.form}>
+
                 <View style={styles.inputs}>
                     {/* Campo de nova senha com ícone de olho */}
-                    <View style={styles.inputLogin}>
+                    <View style={{ width: `100%` }}>
                         <Text style={styles.label}>Nova senha:</Text>
-                        <View style={styles.inputWrapper}>
+                        <View style={styles.inputLogin}>
+
                             <TextInput
                                 placeholder='Digite aqui ...'
                                 style={styles.input}
@@ -93,44 +134,57 @@ export default function Bem_Vindo() {
                             <Ionicons
                                 name={passwordVisible ? "eye-outline" : "eye-off-outline"}
                                 size={24}
-                                color="black"
+                                color="#B3B3B3"
                                 onPress={() => setPasswordVisible(!passwordVisible)}
                                 style={styles.eyeIcon}
                             />
+
                         </View>
                     </View>
 
                     {/* Barra de força da senha */}
-                    <ProgressBarAndroid
-                        styleAttr="Horizontal"
-                        indeterminate={false}
-                        progress={passwordStrength / 5}  // Força vai de 0 a 5
-                        color={passwordStrength < 3 ? "red" : passwordStrength < 4 ? "orange" : "green"} // Cor varia conforme a força
-                    />
+                    {/* Barra de força da senha */}
+                    <View style={styles.progressBarContainer}>
+                        <Animated.View
+                            style={[
+                                styles.progressBar,
+                                {
+                                    width: progressWidth.interpolate({
+                                        inputRange: [0, 100],
+                                        outputRange: ['0%', '100%']
+                                    }),
+                                    backgroundColor: getProgressBarColor(passwordStrength)
+                                }
+                            ]}
+                        />
+                    </View>
+
+
 
                     {/* Textos dos critérios */}
                     <View style={styles.criteriaContainer}>
                         <Text style={[styles.criteriaText, { color: getTextColor(criteriaStatus.hasUpperCase) }]}>
-                            Letra Maiúscula
+                            * Letra Maiúscula
                         </Text>
                         <Text style={[styles.criteriaText, { color: getTextColor(criteriaStatus.hasLowerCase) }]}>
-                            Letra Minúscula
+                            * Letra Minúscula
                         </Text>
                         <Text style={[styles.criteriaText, { color: getTextColor(criteriaStatus.hasNumber) }]}>
-                            Número
+                            * Número
                         </Text>
                         <Text style={[styles.criteriaText, { color: getTextColor(criteriaStatus.hasSymbol) }]}>
-                            Símbolo
+                            * Símbolo
                         </Text>
                         <Text style={[styles.criteriaText, { color: getTextColor(criteriaStatus.hasMinLength) }]}>
-                            8 ou mais dígitos
+                            * 8 ou mais dígitos
                         </Text>
                     </View>
 
                     {/* Campo de confirmar senha com ícone de olho */}
-                    <View style={styles.inputSenha}>
+                    <View style={{ width: `100%` }}>
                         <Text style={styles.label}>Confirme a senha:</Text>
-                        <View style={styles.inputWrapper}>
+                        <View style={styles.inputSenha}>
+
                             <TextInput
                                 placeholder='Digite aqui ...'
                                 style={styles.input}
@@ -141,10 +195,11 @@ export default function Bem_Vindo() {
                             <Ionicons
                                 name={confirmPasswordVisible ? "eye-outline" : "eye-off-outline"}
                                 size={24}
-                                color="black"
+                                color="#B3B3B3"
                                 onPress={() => setConfirmPasswordVisible(!confirmPasswordVisible)}
                                 style={styles.eyeIcon}
                             />
+
                         </View>
                     </View>
                 </View>
@@ -157,6 +212,7 @@ export default function Bem_Vindo() {
                     />
                     <Text style={styles.butaoManter}>Manter Login</Text>
                 </Pressable>
+
             </View>
 
             <View style={styles.botao}>
@@ -173,12 +229,11 @@ const styles = StyleSheet.create({
         flex: 1,
         backgroundColor: 'white',
         alignItems: 'center',
-        justifyContent: 'flex-end',
+        justifyContent: `space-between`
     },
     logo: {
-        flex: 1,
         alignItems: 'center',
-        justifyContent: 'center',
+        marginTop: 20,
     },
     linha: {
         marginTop: 6,
@@ -186,34 +241,40 @@ const styles = StyleSheet.create({
         height: 2,
         backgroundColor: '#ff3838',
     },
-    inputs: {
-        marginTop: -100,
-    },
     form: {
-        flex: 2,
         alignItems: 'center',
-        justifyContent: 'space-around',
+        justifyContent: `flex-start`,
     },
-    inputWrapper: {
+    inputs: {
+        width: `100%`,
+    },
+    inputSenha: {
+        backgroundColor: '#F5F5F5',
+        width: '80%',
         flexDirection: 'row',
         alignItems: 'center',
-        borderBottomWidth: 1,
-        borderBottomColor: '#ccc',
-        width: '100%',
-        justifyContent: 'center',
+        borderRadius: 3,
+        elevation: 2,
+        paddingHorizontal: 5,
+        paddingVertical: 4,
+    },
+    inputLogin: {
+        backgroundColor: '#F5F5F5',
+        width: '80%',
+        flexDirection: 'row',
+        alignItems: 'center',
+        borderRadius: 3,
+        elevation: 2,
+        paddingHorizontal: 5,
+        paddingVertical: 4
     },
     input: {
-        flex: 1,
-        backgroundColor: '#F5F5F5',
-        height: 40,
-        width: '100%',
+        width: '95%',
         borderRadius: 5,
-        paddingHorizontal: 15,
-        marginTop: 10,
         fontSize: 18,
     },
     eyeIcon: {
-        marginRight: 10,
+        marginRight: 5,
     },
     label: {
         fontSize: 14,
@@ -222,6 +283,7 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         justifyContent: 'flex-start',
         alignItems: 'center',
+        marginTop: 25
     },
     butaoManter: {
         width: 260,
@@ -231,28 +293,44 @@ const styles = StyleSheet.create({
         textDecorationLine: 'underline',
     },
     botao: {
-        flex: 1,
         alignItems: 'center',
         justifyContent: 'center',
+        marginBottom: 75
     },
     botaoEntrar: {
         backgroundColor: '#ff3838',
-        width: 100,
-        height: 30,
+        width: 110,
+        height: 31,
         borderRadius: 8,
         justifyContent: 'center',
         alignItems: 'center',
     },
     textoBotao: {
         color: '#fff',
-        fontSize: 15,
+        fontSize: 16,
+    },
+    progressBarContainer: {
+        width: `auto`,
+        height: 15,
+        backgroundColor: '#F5F5F5',
+        borderRadius: 5,
+        overflow: 'hidden',
+        marginTop: 20,
+        marginBottom: 15,
+    },
+    progressBar: {
+        height: '100%',
     },
     criteriaContainer: {
-        marginTop: 20,
+        marginTop: 10,
+        marginBottom: 25,
         alignItems: 'flex-start',
     },
     criteriaText: {
         fontSize: 16,
-        marginVertical: 5,
+        marginVertical: 3,
     },
+
+
 });
+
