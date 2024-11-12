@@ -1,6 +1,5 @@
 
 
-
 import React, { useState } from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Ionicons } from '@expo/vector-icons';
@@ -25,6 +24,7 @@ import Contato from '../components/contato';
 import LaudoAluno from '../components/laudo';
 import ContatoPai from '../components/contatoPai';
 import ChatApp from '../components/chat';
+import Post from '../components/post';
 
 //paginas
 
@@ -57,7 +57,7 @@ function HomeScreen() {
 
 
     return (
-        <View style={{ flex: 1, alignItems: 'center' }}>
+        <View style={{ flex: 1, alignItems: 'center', backgroundColor: '#fff' }}>
 
             <View style={home.header}>
                 <Image style={home.logo} source={require('../assets/img/logo.png')}></Image>
@@ -99,18 +99,11 @@ function HomeScreen() {
 
                 <FlatList
                     data={posts}
-                    keyExtractor={(item, home) => home.toString()}
+                    keyExtractor={(item, index) => index.toString()}
                     renderItem={({ item }) => {
                         console.log("Renderizando item na FlatList:", item); // Verifica o item sendo renderizado
                         return (
-                            <View style={home.postContainer}>
-                                <Text style={home.postText}>{item.texto}</Text>
-                                <View style={home.imagesContainer}>
-                                    {item.imagens.map((imageUri, index) => (
-                                        <Image key={index} source={{ uri: imageUri }} style={home.postImage} />
-                                    ))}
-                                </View>
-                            </View>
+                            <Post texto={item.texto} imagens={item.imagens} />
                         );
                     }}
                 />
@@ -538,27 +531,7 @@ const home = StyleSheet.create({
         right: 10,
         bottom: 10
     },
-    postContainer: {
-        backgroundColor: '#f9f9f9',
-        padding: 10,
-        borderRadius: 8,
-        marginBottom: 10,
-    },
-    postText: {
-        fontSize: 16,
-        marginBottom: 10,
-    },
-    imagesContainer: {
-        flexDirection: 'row',
-        flexWrap: 'wrap',
-    },
-    postImage: {
-        width: 80,
-        height: 80,
-        borderRadius: 5,
-        marginRight: 5,
-        marginBottom: 5,
-    },
+
 });
 
 const config = StyleSheet.create({
@@ -691,6 +664,8 @@ const laudo = StyleSheet.create({
     }
 
 });
+
+
 
 
 

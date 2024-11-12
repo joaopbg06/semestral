@@ -89,6 +89,7 @@ const Adicionar = ({ visible, onClose, onSubmit }) => {
             visible={visible}
             onRequestClose={onClose}
         >
+            
             <View style={styles.modalContainer}>
                 <View style={styles.modalContent}>
                     <View style={styles.header}>

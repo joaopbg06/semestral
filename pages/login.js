@@ -34,7 +34,7 @@ export default function Bem_Vindo() {
         }
         else if (login === 'aluno') {
             navigation.navigate('senha', {
-                usuario: 'home',
+                usuario: 'index',
             });
         }
         else if (login === 'nutricionista') {
@@ -194,4 +194,6 @@ const styles = StyleSheet.create({
         fontSize: 15,
     }
 });
+
+
 

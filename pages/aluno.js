@@ -25,7 +25,7 @@ function HomeScreen() {
         setFiltroAtivo(filtro);
     };
     return (
-        <View style={{ flex: 1, alignItems: 'center' }}>
+        <View style={{ flex: 1, alignItems: 'center', backgroundColor: '#fff' }}>
 
             <View style={index.header}>
                 <Image style={index.logo} source={require('../assets/img/logo.png')}></Image>
