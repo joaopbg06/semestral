@@ -107,6 +107,8 @@ export default function Bem_Vindo() {
     };
 
     return (
+
+        
         <View style={styles.container}>
             <View style={styles.logo}>
                 <Image style={styles.imagemLogo} source={require('../assets/img/logo.png')} />

@@ -34,9 +34,8 @@ const styles = StyleSheet.create({
 
     linha: {
         width: '100%',
-        height: 1,
-        borderWidth: 1,
-        borderColor: 'rgba(255, 0, 0, 0.18)',
+        height: 2,
+        backgroundColor: 'rgba(255, 0, 0, 0.18)',
     },
 
     text: {

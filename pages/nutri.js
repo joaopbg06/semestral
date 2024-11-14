@@ -137,7 +137,7 @@ function SettingsScreen() {
     };
 
     return (
-        <View style={{ flex: 0.9, justifyContent: 'center', alignItems: 'center', flexDirection: 'column' }}>
+        <View style={{ flex: 0.9, justifyContent: 'center', alignItems: 'center', flexDirection: 'column', backgroundColor: `#fff` }}>
 
             <View style={config.perfil}>
 
@@ -294,7 +294,7 @@ function Chat() {
     };
 
     return (
-        <View style={{ flex: 1, alignItems: 'center', justifyContent: 'flex-start' }}>
+        <View style={{ flex: 1, alignItems: 'center', justifyContent: 'flex-start', backgroundColor: `#fff` }}>
 
             <View style={chat.header}>
                 <Image style={chat.logo} source={require('../assets/img/logo.png')}></Image>
@@ -374,7 +374,7 @@ function Laudo() {
     };
 
     return (
-        <View style={{ flex: 1, alignItems: 'center', justifyContent: 'flex-start' }}>
+        <View style={{ flex: 1, alignItems: 'center', justifyContent: 'flex-start', backgroundColor: `#fff` }}>
 
             <View style={laudo.header}>
                 <Image style={laudo.logo} source={require('../assets/img/logo.png')}></Image>
@@ -449,8 +449,6 @@ export default function Acesso() {
                 tabBarInactiveTintColor: '#fff', // Cor do texto e ícone inativo
                 tabBarStyle: { // Estilos para a barra de abas
                     backgroundColor: '#FF3838', // Cor de fundo da barra de abas
-                    borderTopColor: '#ccc', // Cor da borda superior da barra
-                    borderTopWidth: 1, // Largura da borda superior da barra
                     height: 60, // Altura da barra de abas
                 },
                 tabBarLabelStyle: {
