@@ -317,7 +317,9 @@ function HomeScreen() {
                             }} />
                         </>
                     )}
-                    style={{ width: '100%' }}
+                    style={{
+                        width: '100%', marginTop: 20
+                    }}
                 />
 
 
