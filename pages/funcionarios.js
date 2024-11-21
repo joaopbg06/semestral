@@ -27,10 +27,6 @@ function HomeScreen() {
 
 
 
-    const handleInputChange = (text) => {
-        setPesquisa(text);
-        console.log('Input na pesquisa:', text); // Para visualizar a entrada atual
-    };
 
 
     const data = [
@@ -44,6 +40,28 @@ function HomeScreen() {
         { id: 8, nome: 'Aluno8', Email: 'nome.sobrenome@portalsesisp.org.br', RM: '1234', telefone: '(+55) 11 12345-5678' },
         { id: 9, nome: 'Aluno9', Email: 'nome.sobrenome@portalsesisp.org.br', RM: '1234', telefone: '(+55) 11 12345-5678' },
     ];
+
+    const [filteredData, setFilteredData] = useState(data); // Inicializar com todos os dados
+
+
+    const handleInputChange = (text) => {
+        setPesquisa(text);
+        console.log('Input na pesquisa:', text); // Para visualizar a entrada atual
+        filtrarDados(text)
+    };
+
+
+    const filtrarDados = (texto) => {
+        if (texto === '') {
+            setFilteredData(data); // Reseta para todos os dados se o campo de pesquisa estiver vazio
+        } else {
+            const resultados = data.filter((item) =>
+                item.nome.toLowerCase().includes(texto.toLowerCase()) || // Filtra por nome
+                item.Email.toLowerCase().includes(texto.toLowerCase()) // Filtra por email (ou qualquer outro campo)
+            );
+            setFilteredData(resultados); // Atualiza com os resultados filtrados
+        }
+    };
 
     const [modalVisible, setModalVisible] = useState(false);  // Controle de exibição do modal
     const [selectedContato, setSelectedContato] = useState(null);
@@ -78,7 +96,7 @@ function HomeScreen() {
             <FlatList
                 style={{ flex: 1, width: '90%' }}
                 keyExtractor={(item) => String(item.id)}
-                data={data}
+                data={filteredData}
                 renderItem={({ item }) => <Contato data={item} onPress={() => handlePressContato(item)} />}
 
             />
