@@ -100,13 +100,31 @@ function HomeScreen() {
                 <FlatList
                     data={posts}
                     keyExtractor={(item, index) => index.toString()}
-                    renderItem={({ item }) => {
-                        console.log("Renderizando item na FlatList:", item); // Verifica o item sendo renderizado
-                        return (
-                            <Post texto={item.texto} imagens={item.imagens} />
-                        );
+                    renderItem={({ item }) => (
+                        <>
+                            <Post
+                                texto={item.texto}
+                                imagens={item.imagens}
+                                imagem={item.imagem}
+                                tipo={item.tipo}
+                                opcoes={item.opcoes}
+                            />
+                            <View style={{
+                                width: '95%',
+                                height: 2,
+                                backgroundColor: '#ff0000',
+                                opacity: 0.18,
+                                alignSelf: 'center', // Centraliza a linha divisória
+                                marginVertical: 25, // Espaçamento vertical entre posts
+                            }} />
+                        </>
+                    )}
+                    style={{
+                        width: '100%', marginTop: 20
                     }}
                 />
+
+
 
 
             </View>
@@ -516,6 +534,10 @@ const home = StyleSheet.create({
     },
     main: {
         flex: 4,
+        width: `100%`,
+        alignItems: `center`,
+        justifyContent: `center`,
+        marginTop: -45
     },
     botaoAdicionar: {
         width: 50,
