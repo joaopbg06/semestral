@@ -19,6 +19,7 @@ export default function Bem_Vindo() {
     const route = useRoute(); // Inicialize o hook useRoute corretamente
 
     const { usuario } = route.params;
+    const { id } = route.params;
 
     const [isChecked, setIsChecked] = useState(false);
     const [password, setPassword] = useState('');
@@ -108,7 +109,7 @@ export default function Bem_Vindo() {
 
     return (
 
-        
+
         <View style={styles.container}>
             <View style={styles.logo}>
                 <Image style={styles.imagemLogo} source={require('../assets/img/logo.png')} />
@@ -218,7 +219,11 @@ export default function Bem_Vindo() {
             </View>
 
             <View style={styles.botao}>
-                <Pressable onPress={() => navigation.navigate(usuario)} style={styles.botaoEntrar}>
+                <Pressable
+                    // onPress={() => console.log(id)}
+                    onPress={() => navigation.navigate(usuario)}
+                    style={styles.botaoEntrar}
+                >
                     <Text style={styles.textoBotao}>Entrar</Text>
                 </Pressable>
             </View>

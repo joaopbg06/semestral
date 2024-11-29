@@ -1,6 +1,6 @@
 
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Ionicons } from '@expo/vector-icons';
 import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
@@ -26,6 +26,9 @@ import ContatoPai from '../components/contatoPai';
 import ChatApp from '../components/chat';
 import Post from '../components/post';
 
+import { supabase } from '../supabase';
+
+
 //paginas
 
 function HomeScreen() {
@@ -47,14 +50,28 @@ function HomeScreen() {
         setModalVisible(false);
     };
 
-    const adicionarPost = (novoPost) => {
-        console.log("Post recebido do modal:", novoPost); // Verifica o post recebido do modal
-        setPosts([...posts, novoPost]);
-        setModalVisible(false);
+
+    const fetchPosts = async () => {
+        try {
+            const { data, error } = await supabase
+                .from('post') // Nome da tabela
+                .select('*'); // Busca todas as colunas
+
+            if (error) {
+                console.error('Erro ao buscar dados:', error.message);
+                return;
+            }
+
+            setPosts(data); // Atualiza o estado "posts" com os dados retornados
+        } catch (err) {
+            console.error('Erro inesperado:', err);
+        }
     };
 
-
-
+    // useEffect para buscar os dados ao montar o componente
+    useEffect(() => {
+        fetchPosts(); // Chama a função para buscar os dados
+    }, []);
 
     return (
         <View style={{ flex: 1, alignItems: 'center', backgroundColor: '#fff' }}>
@@ -138,7 +155,6 @@ function HomeScreen() {
                 <Adicionar
                     visible={isModalVisible}
                     onClose={closeModal}
-                    onSubmit={adicionarPost}
                 />
             )}
         </View>
@@ -365,7 +381,7 @@ function Laudo() {
 
 
 
-    
+
 
     const data = [
         { id: 1, nome: 'Aluno1', Email: 'nome.sobrenome@portalsesisp.org.br', RM: '1234', telefone: '(+55) 11 12345-5678' },

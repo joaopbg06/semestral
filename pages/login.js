@@ -16,44 +16,114 @@ import {
 import { useNavigation } from '@react-navigation/native';
 import { useState } from 'react';
 
+import { supabase } from '../supabase';
+
+
 export default function Bem_Vindo() {
 
     const navigation = useNavigation();
 
     const [isChecked, setIsChecked] = useState(false);
-    const [login, setLogin] = useState('');
+    const [login, setLogin] = useState();
     const [senha, setSenha] = useState('');
 
     const toggleCheck = () => {
         setIsChecked(prevState => !prevState);
     };
 
-    const entrar = () => {
-        if (!login) {
-            alert('Informe o login');
-        }
-        else if (login === 'aluno') {
-            navigation.navigate('senha', {
-                usuario: 'index',
-            });
-        }
-        else if (login === 'nutricionista') {
-            navigation.navigate('senha', {
-                usuario: 'nutricionista',
-            });
-        }
-        else if (login === 'pais') {
-            navigation.navigate('senha', {
-                usuario: 'pais',
-            });
-        }
-        else if (login === 'funcionarios') {
-            navigation.navigate('senha', {
-                usuario: 'funcionarios',
-            });
+    const handleLogin = async (cpf, password) => {
+        const info = await buscarEmailPorCpfOuRm(cpf); // Busca o email pelo CPF
 
+        if (info) {
+
+            const a = info[0]?.email;
+            const categoria = info[0]?.categoria;
+            const id = info[0]?.id;
+            console.log("teste a : " +a)
+
+            const sucesso = await realizarLogin(a, password); // Realiza o login
+            if (sucesso) {
+                
+                console.log('Usuário logado com sucesso!');
+
+                navigation.navigate('senha', {
+                    usuario: categoria,
+                    id: id
+                });
+            } else {
+                console.log('Falha no login.');
+            }
+        } else {
+            console.log('Não foi possível encontrar o email para o CPF informado.');
         }
     };
+
+    const buscarEmailPorCpfOuRm = async (identificador) => {""
+        console.log("Identificador recebido:", identificador);
+
+        try {
+            let query; // Variável para armazenar a consulta
+            if (identificador.length === 4) {
+                console.log("Procurando pelo RM");
+                query = supabase
+                    .from('profiles') // Nome da tabela
+                    .select('email, categoria, id')  // Seleciona a coluna 'email'
+                    .eq('rm', identificador); // Filtra pelo RM
+            } else {
+                console.log("Procurando pelo CPF");
+                query = supabase
+                    .from('profiles') // Nome da tabela
+                    .select('email, categoria, id')  // Seleciona a coluna 'email'
+                    .eq('cpf', identificador); // Filtra pelo CPF
+            }
+
+            // Executa a consulta
+            const { data, error } = await query;
+
+            console.log(data)
+
+            if (error) {
+                console.error('Erro ao buscar o email:', error.message);
+                return null;
+            }
+
+            // Verifica se encontrou algum resultado
+            if (data && data.length > 0) {
+                return data;
+            } else {
+                console.log('Nenhum resultado encontrado');
+                return null;
+            }
+        } catch (err) {
+            console.error('Erro desconhecido:', err);
+            return null;
+        }
+    };
+
+    const realizarLogin = async (email, password) => {
+
+        console.log(email)
+
+        try {
+            const { error } = await supabase.auth.signInWithPassword({
+                email,
+                password,
+            });
+
+            if (error) {
+                console.error('Erro ao realizar login:', error.message);
+                return false; // Indica falha no login
+            }
+
+            console.log('Login realizado com sucesso!');
+            return true; // Indica sucesso no login
+        } catch (err) {
+            console.error('Erro desconhecido ao tentar logar:', err);
+            return false;
+        }
+    };
+
+
 
     return (
         <KeyboardAvoidingView
@@ -105,7 +175,7 @@ export default function Bem_Vindo() {
                         </View>
 
                         <View style={styles.botao}>
-                            <Pressable onPress={entrar} style={styles.botaoEntrar}>
+                            <Pressable onPress={() => handleLogin(login, senha)} style={styles.botaoEntrar}>
                                 <Text style={styles.textoBotao}>Entrar</Text>
                             </Pressable>
                         </View>

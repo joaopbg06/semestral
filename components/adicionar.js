@@ -6,6 +6,9 @@ import * as ImagePicker from 'expo-image-picker';
 import Feather from '@expo/vector-icons/Feather';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 
+import { supabase } from '../supabase';
+
+
 const Adicionar = ({ visible, onClose, onSubmit }) => {
 
 
@@ -102,17 +105,17 @@ const Adicionar = ({ visible, onClose, onSubmit }) => {
     const [titulo, setTitulo] = useState(``)
 
 
-    const handleEnviar = () => {
+    const handleEnviar = async () => {
         let dataToSubmit = null;
-        let isValid = false;  // Flag para verificar se os dados estão válidos
-
+        let isValid = false; // Flag para verificar se os dados estão válidos
+    
         // Verifica a opção selecionada no picker e cria um objeto conforme necessário
         if (value === 'opcao1') {
-            if (texto.trim() !== '') {  // Verifica se o texto não está vazio
+            if (texto.trim() !== '') { // Verifica se o texto não está vazio
                 dataToSubmit = {
-                    tipo: 'sugestao',
-                    texto: texto,
-                    imagens: selectedImages,
+                    tipo: 'sugestao', // Valor fixo para diferenciar os tipos
+                    texto: texto,     // Campo "texto" preenchido
+                    opcoes: null,     // Sugestão não utiliza "opcoes"
                 };
                 isValid = true;
             } else {
@@ -123,33 +126,42 @@ const Adicionar = ({ visible, onClose, onSubmit }) => {
             const areOptionsFilled = options.every(option => option.trim() !== '');
             if (titulo.trim() !== '' && areOptionsFilled) {
                 dataToSubmit = {
-                    tipo: 'enquete',
-                    texto: titulo,
-                    opcoes: options,
+                    tipo: 'enquete',     // Valor fixo para diferenciar os tipos
+                    texto: titulo,       // Campo "texto" usado como título da enquete
+                    opcoes: options,     // Lista de opções da enquete
                 };
                 isValid = true;
             } else {
                 alert('Por favor, preencha o título e todas as opções para a enquete.');
             }
         } else if (value === 'opcao3') {
-            // Verifica se uma imagem foi selecionada
-            if (selectedImage) {
-                dataToSubmit = {
-                    tipo: 'cardapio',
-                    imagem: selectedImage,
-                };
-                isValid = true;
-            } else {
-                alert('Por favor, selecione uma imagem para o cardápio.');
+            // Por enquanto não lida com a imagem
+            alert('Função para "cardápio" ainda não implementada.');
+            return;
+        }
+    
+        // Envia o objeto para o Supabase se os dados estiverem válidos
+        if (isValid && dataToSubmit) {
+            try {
+                // Insere os dados na tabela "post" do Supabase
+                const { data, error } = await supabase
+                    .from('post')
+                    .insert([dataToSubmit]);
+    
+                if (error) {
+                    console.error('Erro ao inserir dados:', error.message);
+                    alert('Ocorreu um erro ao enviar os dados. Tente novamente.');
+                } else {
+                    alert('Dados enviados com sucesso!');
+                    onClose(); // Fecha o modal após o envio
+                }
+            } catch (err) {
+                console.error('Erro inesperado:', err);
+                alert('Erro inesperado ao enviar os dados.');
             }
         }
-
-        // Envia o objeto ao componente pai se os dados estiverem válidos
-        if (isValid && dataToSubmit) {
-            onSubmit(dataToSubmit);
-            onClose();  // Fecha o modal após o envio
-        }
     };
+    
 
 
 
@@ -490,7 +502,7 @@ const styles = StyleSheet.create({
     arrowButton: {
         padding: 5,
     },
-    ImageFood:{
+    ImageFood: {
         width: '100%',
         alignItems: 'center'
     },
@@ -501,7 +513,7 @@ const styles = StyleSheet.create({
         marginVertical: 10,
 
     },
-    sla:{
+    sla: {
         paddingVertical: 65,
     },
 
