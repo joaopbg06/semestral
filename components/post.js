@@ -18,7 +18,7 @@ import {
 } from 'react-native';
 
 // Componente Post
-const Post = ({ texto, imagens, imagem, tipo, opcoes }) => {
+const Post = ({ texto, imagens, imagem, tipo, opcoes, id, del }) => {
 
     const [modalVisible, setModalVisible] = useState(false);
     const [selectedImage, setSelectedImage] = useState(null);
@@ -33,6 +33,9 @@ const Post = ({ texto, imagens, imagem, tipo, opcoes }) => {
         setSelectedImage(null);
     };
 
+    const handleDelete = () => {
+        del(id); // Chama a função com o ID do post
+    };
 
     return (
         <View style={[styles.container]}>
@@ -46,8 +49,8 @@ const Post = ({ texto, imagens, imagem, tipo, opcoes }) => {
                     <Text style={styles.time}>08/09/2024</Text>
                 </View>
 
-                <Pressable onPress={() => console.log(`press in more`)}>
-                    <Ionicons name={'ellipsis-horizontal'} size={30} color={'#000'} />
+                <Pressable onPress={handleDelete}>
+                    <Ionicons name="trash-outline" size={22} color={'#ff0000'} />
                 </Pressable>
             </View>
 

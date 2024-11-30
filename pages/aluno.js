@@ -20,6 +20,7 @@ import {
 import { supabase } from '../supabase';
 import Post from '../components/post';
 
+import { useRoute } from '@react-navigation/native';
 
 
 function HomeScreen() {
@@ -128,21 +129,48 @@ function HomeScreen() {
     );
 }
 
-function SettingsScreen() {
+function SettingsScreen({ route }) {
+
+    const [isToggled, setIsToggled] = useState(false);
+    const [dados, setDados] = useState([]);
+    const { id } = route.params || {};
 
     const toggleSwitch = () => {
         setIsToggled(prev => !prev);
     };
 
+    const fetchUserProfile = async (id) => {
 
+        try {
+            const { data, error } = await supabase
+                .from('profiles') // Nome da tabela
+                .select('*') // Seleciona todas as colunas
+                .eq('id', id) // Filtra pelo id do usuário
+                .single(); // Retorna apenas um registro
+    
+            if (error) {
+                console.error('Erro ao buscar perfil:', error.message);
+                return null; // Retorna null em caso de erro
+            }
+    
+            setDados(data)
+        } catch (err) {
+            console.error('Erro inesperado ao buscar perfil:', err);
+            return null;
+        }
+    };
+
+    useEffect(() => {
+        fetchUserProfile(id); // Chama a função para buscar os dados
+    }, []);
 
     return (
-        <View style={{ flex: 0.9, justifyContent: 'center', alignItems: 'center', flexDirection: 'column' }}>
+        <View style={{ flex: 0.9, justifyContent: 'center', alignItems: 'center', flexDirection: 'column', backgroundColor: `#fff` }}>
 
             <View style={config.perfil}>
 
                 <Image style={config.imagemAluno} source={require('../assets/img/alunoFt.png')}></Image>
-                <Text style={config.nomeAluno}> {userData.nome} </Text>
+                <Text style={config.nomeAluno}> {dados.nome} </Text>
             </View>
 
             <View style={config.contato}>
@@ -155,7 +183,7 @@ function SettingsScreen() {
                             <Ionicons name={'call'} size={24} color={'#000'} />
                             <Text style={config.desc}> Telefone </Text>
                         </View>
-                        <Text style={config.assunto}> {userData.telefone} </Text>
+                        <Text style={config.assunto}> {dados.telefone} </Text>
                     </View>
 
                     <View style={config.box}>
@@ -163,7 +191,7 @@ function SettingsScreen() {
                             <Ionicons name={'mail'} size={24} color={'#000'} />
                             <Text style={config.desc}> Email </Text>
                         </View>
-                        <Text style={config.assunto}> {userData.email} </Text>
+                        <Text style={config.assunto}> {dados.email} </Text>
                     </View>
                 </View>
 
@@ -196,13 +224,19 @@ function SettingsScreen() {
                     </View>
                 </View>
             </View>
-        </View>
+
+        </View >
     );
 }
 
 const Tab = createBottomTabNavigator();
 
 export default function Acesso() {
+
+    const route = useRoute(); // Hook para acessar os parâmetros da rota
+    const { ok: id } = route.params || {}; // Desestrutura o parâmetro `ok` (id passado)
+
+    console.log('ID recebido no Acesso:', id); // Use para verificar se o valor está chegando
 
     return (
         <Tab.Navigator
@@ -239,8 +273,8 @@ export default function Acesso() {
                 }
             })}
         >
-            <Tab.Screen name="Home" component={HomeScreen} options={{ headerShown: false }} />
-            <Tab.Screen name="Settings" component={SettingsScreen} options={{ headerShown: false }} />
+            <Tab.Screen  initialParams={{ id }} name="Home" component={HomeScreen} options={{ headerShown: false }} />
+            <Tab.Screen  initialParams={{ id }} name="Settings" component={SettingsScreen} options={{ headerShown: false }} />
         </Tab.Navigator>
     );
 }

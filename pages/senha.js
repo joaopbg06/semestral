@@ -107,6 +107,13 @@ export default function Bem_Vindo() {
         return isValid ? 'green' : 'red';
     };
 
+    const handleSenha = () => {
+        const teste = id
+        navigation.navigate(usuario, {
+            ok : teste
+        })
+    };
+
     return (
 
 
@@ -221,7 +228,12 @@ export default function Bem_Vindo() {
             <View style={styles.botao}>
                 <Pressable
                     // onPress={() => console.log(id)}
-                    onPress={() => navigation.navigate(usuario)}
+                    // onPress={() => navigation.navigate(usuario, {
+                    //     a: id
+                    // })}
+                    onPress={() => {
+                        handleSenha()
+                    }}
                     style={styles.botaoEntrar}
                 >
                     <Text style={styles.textoBotao}>Entrar</Text>

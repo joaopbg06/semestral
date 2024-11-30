@@ -28,6 +28,7 @@ import Post from '../components/post';
 
 import { supabase } from '../supabase';
 
+import { useRoute } from '@react-navigation/native';
 
 //paginas
 
@@ -72,6 +73,29 @@ function HomeScreen() {
     useEffect(() => {
         fetchPosts(); // Chama a função para buscar os dados
     }, []);
+
+
+    const deletePost = async (postId) => {
+        try {
+            const { error } = await supabase
+                .from('post') // Nome da tabela
+                .delete()     // Método para deletar
+                .eq('id', postId); // Condição: deleta o post com o ID correspondente
+
+            if (error) {
+                console.error('Erro ao deletar post:', error.message);
+                alert('Não foi possível deletar o post. Tente novamente.');
+            } else {
+                alert('Post deletado com sucesso!');
+                // Atualize os posts após a exclusão, se necessário
+                fetchPosts(); // Certifique-se de que a função fetchPosts está definida no mesmo escopo
+            }
+        } catch (err) {
+            console.error('Erro inesperado:', err);
+            alert('Ocorreu um erro inesperado ao deletar o post.');
+        }
+    };
+
 
     return (
         <View style={{ flex: 1, alignItems: 'center', backgroundColor: '#fff' }}>
@@ -125,6 +149,8 @@ function HomeScreen() {
                                 imagem={item.imagem}
                                 tipo={item.tipo}
                                 opcoes={item.opcoes}
+                                id={item.id}
+                                del={deletePost}
                             />
                             <View style={{
                                 width: '95%',
@@ -162,13 +188,40 @@ function HomeScreen() {
     );
 }
 
-function SettingsScreen() {
+function SettingsScreen({ route }) {
 
     const [isToggled, setIsToggled] = useState(false);
+    const [dados, setDados] = useState([]);
+    const { id } = route.params || {};
 
     const toggleSwitch = () => {
         setIsToggled(prev => !prev);
     };
+
+    const fetchUserProfile = async (id) => {
+
+        try {
+            const { data, error } = await supabase
+                .from('profiles') // Nome da tabela
+                .select('*') // Seleciona todas as colunas
+                .eq('id', id) // Filtra pelo id do usuário
+                .single(); // Retorna apenas um registro
+    
+            if (error) {
+                console.error('Erro ao buscar perfil:', error.message);
+                return null; // Retorna null em caso de erro
+            }
+    
+            setDados(data)
+        } catch (err) {
+            console.error('Erro inesperado ao buscar perfil:', err);
+            return null;
+        }
+    };
+
+    useEffect(() => {
+        fetchUserProfile(id); // Chama a função para buscar os dados
+    }, []);
 
     return (
         <View style={{ flex: 0.9, justifyContent: 'center', alignItems: 'center', flexDirection: 'column', backgroundColor: `#fff` }}>
@@ -176,7 +229,7 @@ function SettingsScreen() {
             <View style={config.perfil}>
 
                 <Image style={config.imagemAluno} source={require('../assets/img/alunoFt.png')}></Image>
-                <Text style={config.nomeAluno}>Nome da nutricionista</Text>
+                <Text style={config.nomeAluno}> {dados.nome} </Text>
             </View>
 
             <View style={config.contato}>
@@ -189,7 +242,7 @@ function SettingsScreen() {
                             <Ionicons name={'call'} size={24} color={'#000'} />
                             <Text style={config.desc}> Telefone </Text>
                         </View>
-                        <Text style={config.assunto}> (+55) 11 12345-6789 </Text>
+                        <Text style={config.assunto}> {dados.telefone} </Text>
                     </View>
 
                     <View style={config.box}>
@@ -197,7 +250,7 @@ function SettingsScreen() {
                             <Ionicons name={'mail'} size={24} color={'#000'} />
                             <Text style={config.desc}> Email </Text>
                         </View>
-                        <Text style={config.assunto}> nome.sobrenome@portalsesisp.org.br </Text>
+                        <Text style={config.assunto}> {dados.email} </Text>
                     </View>
                 </View>
 
@@ -476,48 +529,75 @@ function Laudo() {
 const Tab = createBottomTabNavigator();
 
 export default function Acesso() {
+    const route = useRoute(); // Hook para acessar os parâmetros da rota
+    const { ok: id } = route.params || {}; // Desestrutura o parâmetro `ok` (id passado)
+
+    console.log('ID recebido no Acesso:', id); // Use para verificar se o valor está chegando
+
     return (
         <Tab.Navigator
             screenOptions={({ route }) => ({
                 tabBarIcon: ({ focused, color }) => {
                     let iconName;
 
-                    // Lógica para selecionar o ícone com base no nome da aba (route.name)
                     if (route.name === 'Home') {
                         iconName = focused ? 'home' : 'home-outline';
                     } else if (route.name === 'Settings') {
                         iconName = focused ? 'settings' : 'settings-outline';
                     } else if (route.name === 'Dashboard') {
-                        iconName = focused ? 'people' : 'people-outline'; // Ícone para Dashboard
+                        iconName = focused ? 'people' : 'people-outline';
                     } else if (route.name === 'Chatbox') {
-                        iconName = focused ? 'chatbubbles' : 'chatbubbles-outline'; // Ícone para Chatbox
+                        iconName = focused ? 'chatbubbles' : 'chatbubbles-outline';
                     } else if (route.name === 'Laudo') {
-                        iconName = focused ? 'document-text' : 'document-text-outline'; // Ícone para Laudo
+                        iconName = focused ? 'document-text' : 'document-text-outline';
                     }
 
-                    // Retorna o ícone apropriado da biblioteca Ionicons
                     return <Ionicons name={iconName} size={30} color={color} />;
                 },
-                tabBarActiveTintColor: '#fff', // Cor do texto e ícone ativo
-                tabBarInactiveTintColor: '#fff', // Cor do texto e ícone inativo
-                tabBarStyle: { // Estilos para a barra de abas
-                    backgroundColor: '#FF3838', // Cor de fundo da barra de abas
-                    height: 60, // Altura da barra de abas
+                tabBarActiveTintColor: '#fff',
+                tabBarInactiveTintColor: '#fff',
+                tabBarStyle: {
+                    backgroundColor: '#FF3838',
+                    height: 60,
                 },
                 tabBarLabelStyle: {
-                    display: 'none', // Oculta os rótulos
+                    display: 'none',
                 },
-                tabBarIconStyle: { // Estilos para os ícones
-                    marginTop: 5, // Margem superior dos ícones
+                tabBarIconStyle: {
+                    marginTop: 5,
                 }
             })}
         >
-            <Tab.Screen name="Home" component={HomeScreen} options={{ headerShown: false }} />
-            <Tab.Screen name="Dashboard" component={Dashboard} options={{ headerShown: false }} />
-            <Tab.Screen name="Chatbox" component={Chat} options={{ headerShown: false }} />
-            <Tab.Screen name="Laudo" component={Laudo} options={{ headerShown: false }} />
-            <Tab.Screen name="Settings" component={SettingsScreen} options={{ headerShown: false }} />
-
+            <Tab.Screen
+                name="Home"
+                component={HomeScreen}
+                options={{ headerShown: false }}
+                initialParams={{ id }} // Passa o `id` para o HomeScreen
+            />
+            <Tab.Screen
+                name="Dashboard"
+                component={Dashboard}
+                options={{ headerShown: false }}
+                initialParams={{ id }} // Passa o `id` para o Dashboard
+            />
+            <Tab.Screen
+                name="Chatbox"
+                component={Chat}
+                options={{ headerShown: false }}
+                initialParams={{ id }} // Passa o `id` para o Chat
+            />
+            <Tab.Screen
+                name="Laudo"
+                component={Laudo}
+                options={{ headerShown: false }}
+                initialParams={{ id }} // Passa o `id` para o Laudo
+            />
+            <Tab.Screen
+                name="Settings"
+                component={SettingsScreen}
+                options={{ headerShown: false }}
+                initialParams={{ id }} // Passa o `id` para o Settings
+            />
         </Tab.Navigator>
     );
 }
