@@ -39,17 +39,30 @@ export default function Bem_Vindo() {
             const a = info[0]?.email;
             const categoria = info[0]?.categoria;
             const id = info[0]?.id;
-            console.log("teste a : " +a)
+            console.log("teste a : " + a)
 
             const sucesso = await realizarLogin(a, password); // Realiza o login
             if (sucesso) {
-                
+
                 console.log('Usuário logado com sucesso!');
 
-                navigation.navigate('senha', {
-                    usuario: categoria,
-                    id: id
-                });
+                if (password === '123456') {
+
+                    console.log('redefinir');
+
+
+                    navigation.navigate('senha', {
+                        usuario: categoria,
+                        id: id
+                    });
+                } else {
+
+                    console.log('passou');
+
+                    navigation.navigate(categoria, {
+                        id: id
+                    });
+                }
             } else {
                 console.log('Falha no login.');
             }
@@ -58,7 +71,8 @@ export default function Bem_Vindo() {
         }
     };
 
-    const buscarEmailPorCpfOuRm = async (identificador) => {""
+    const buscarEmailPorCpfOuRm = async (identificador) => {
+        ""
         console.log("Identificador recebido:", identificador);
 
         try {

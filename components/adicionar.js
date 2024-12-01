@@ -7,9 +7,11 @@ import Feather from '@expo/vector-icons/Feather';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 
 import { supabase } from '../supabase';
+import * as FileSystem from "expo-file-system";
+import { decode } from 'base64-arraybuffer';
 
 
-const Adicionar = ({ visible, onClose, onSubmit }) => {
+const Adicionar = ({ visible, onClose, user_id }) => {
 
 
     // picker
@@ -50,6 +52,8 @@ const Adicionar = ({ visible, onClose, onSubmit }) => {
         setSelectedImages((prevImages) => prevImages.filter((_, index) => index !== indexToRemove));
     };
 
+
+
     //op 2
 
     const [options, setOptions] = useState(['', '']); // Começa com duas opções
@@ -83,6 +87,7 @@ const Adicionar = ({ visible, onClose, onSubmit }) => {
         let result = await ImagePicker.launchImageLibraryAsync({
             allowsEditing: true,
             quality: 1,
+            base64: true,
         });
 
         if (!result.canceled) {
@@ -108,7 +113,7 @@ const Adicionar = ({ visible, onClose, onSubmit }) => {
     const handleEnviar = async () => {
         let dataToSubmit = null;
         let isValid = false; // Flag para verificar se os dados estão válidos
-    
+
         // Verifica a opção selecionada no picker e cria um objeto conforme necessário
         if (value === 'opcao1') {
             if (texto.trim() !== '') { // Verifica se o texto não está vazio
@@ -116,6 +121,7 @@ const Adicionar = ({ visible, onClose, onSubmit }) => {
                     tipo: 'sugestao', // Valor fixo para diferenciar os tipos
                     texto: texto,     // Campo "texto" preenchido
                     opcoes: null,     // Sugestão não utiliza "opcoes"
+                    user_id: user_id,
                 };
                 isValid = true;
             } else {
@@ -129,6 +135,8 @@ const Adicionar = ({ visible, onClose, onSubmit }) => {
                     tipo: 'enquete',     // Valor fixo para diferenciar os tipos
                     texto: titulo,       // Campo "texto" usado como título da enquete
                     opcoes: options,     // Lista de opções da enquete
+                    user_id: user_id,
+
                 };
                 isValid = true;
             } else {
@@ -136,10 +144,18 @@ const Adicionar = ({ visible, onClose, onSubmit }) => {
             }
         } else if (value === 'opcao3') {
             // Por enquanto não lida com a imagem
-            alert('Função para "cardápio" ainda não implementada.');
-            return;
+            // alert('Função para "cardápio" ainda não implementada.');
+            // return;
+
+            const { data, error } = await supabase
+                .storage
+                .from('arquivos')
+                .upload('imagem/avatar1.png', decode('base64FileData'), {
+                    contentType: 'image/png'
+                })
+                console.log('foi')
         }
-    
+
         // Envia o objeto para o Supabase se os dados estiverem válidos
         if (isValid && dataToSubmit) {
             try {
@@ -147,7 +163,7 @@ const Adicionar = ({ visible, onClose, onSubmit }) => {
                 const { data, error } = await supabase
                     .from('post')
                     .insert([dataToSubmit]);
-    
+
                 if (error) {
                     console.error('Erro ao inserir dados:', error.message);
                     alert('Ocorreu um erro ao enviar os dados. Tente novamente.');
@@ -161,7 +177,7 @@ const Adicionar = ({ visible, onClose, onSubmit }) => {
             }
         }
     };
-    
+
 
 
 

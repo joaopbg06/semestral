@@ -9,7 +9,7 @@ const ContatoPai = ({ data, ida }) => {
     const [receiverId, setReceiverId] = useState();
     const [senderId, setSenderId] = useState();
     const [messages, setMessages] = useState([]);
-    const [dados, setDados] = useState({id: '' ,  nome: '', telefone: '' })
+    const [dados, setDados] = useState({ id: '', nome: '', telefone: '' })
     const [modalVisible, setModalVisible] = useState(false); // Estado do modal
 
     // Função para buscar a última mensagem
@@ -23,12 +23,12 @@ const ContatoPai = ({ data, ida }) => {
                 .or(`sender_id.eq.${receiverId},receiver_id.eq.${receiverId}`)
                 .order('created_at', { ascending: false }) // Ordenando pela data mais recente
                 .limit(1); // Pegando apenas a última mensagem
-    
+
             if (error) {
                 console.error('Erro ao buscar a última mensagem:', error.message);
                 return null;
             }
-    
+
             // Retorna a última mensagem, se houver
             return data.length > 0 ? data[0] : null;
         } catch (err) {
@@ -36,7 +36,7 @@ const ContatoPai = ({ data, ida }) => {
             return null;
         }
     };
-    
+
 
     // Função para buscar todas as mensagens entre dois usuários
     const fetchMessages = async (loggedUserId, otherUserId) => {
@@ -63,19 +63,19 @@ const ContatoPai = ({ data, ida }) => {
         }
     };
 
-    
+
     const fetchUserDetails = async (userId) => {
         try {
             const { data, error } = await supabase
                 .from('profiles')
                 .select('id, nome, telefone') // Seleciona apenas as colunas 'nome' e 'telefone'
                 .eq('id', userId) // Filtra pelo ID do usuário
-    
+
             if (error) {
                 console.error('Erro ao buscar os detalhes do usuário:', error.message);
                 return null;
             }
-    
+
             if (data.length > 0) {
                 return data[0]; // Retorna o objeto com 'nome' e 'telefone'
             } else {
@@ -87,7 +87,7 @@ const ContatoPai = ({ data, ida }) => {
             return null;
         }
     };
-    
+
 
     // Carregar o receiverId e senderId
     useEffect(() => {
@@ -105,6 +105,8 @@ const ContatoPai = ({ data, ida }) => {
         };
 
         loadLastMessage();
+
+        console.log('carregou')
     }, [senderId, receiverId]);
 
     // Carregar todas as mensagens quando o modal for aberto
@@ -144,6 +146,7 @@ const ContatoPai = ({ data, ida }) => {
                     onClose={() => setModalVisible(false)} // Função para fechar o modal
                     dados={dados}
                     loggedUserId={ida}
+                    fetchLastMessage={fetchLastMessage} // Passando a função fetchLastMessage para o ChatApp
                 />
             </Modal>
         </View>

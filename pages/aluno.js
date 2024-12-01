@@ -234,7 +234,7 @@ const Tab = createBottomTabNavigator();
 export default function Acesso() {
 
     const route = useRoute(); // Hook para acessar os parâmetros da rota
-    const { ok: id } = route.params || {}; // Desestrutura o parâmetro `ok` (id passado)
+    const { id: id } = route.params || {}; // Desestrutura o parâmetro `ok` (id passado)
 
     console.log('ID recebido no Acesso:', id); // Use para verificar se o valor está chegando
 

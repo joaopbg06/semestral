@@ -16,7 +16,8 @@ import {
     TouchableWithoutFeedback,
     Pressable,
     FlatList,
-    Modal
+    Modal,
+    ScrollView
 } from 'react-native';
 
 import Adicionar from '../components/adicionar'
@@ -32,10 +33,12 @@ import { useRoute } from '@react-navigation/native';
 
 //paginas
 
-function HomeScreen() {
+function HomeScreen({ route }) {
     const [filtroAtivo, setFiltroAtivo] = useState('Geral');
     const [isModalVisible, setModalVisible] = useState(false);
     const [posts, setPosts] = useState([]);
+    const { id } = route.params || {};
+
 
     const handleFiltroPress = (filtro) => {
         setFiltroAtivo(filtro);
@@ -151,6 +154,7 @@ function HomeScreen() {
                                 opcoes={item.opcoes}
                                 id={item.id}
                                 del={deletePost}
+                                user_id={item.user_id}
                             />
                             <View style={{
                                 width: '95%',
@@ -181,6 +185,7 @@ function HomeScreen() {
                 <Adicionar
                     visible={isModalVisible}
                     onClose={closeModal}
+                    user_id={id}
                 />
             )}
         </View>
@@ -288,13 +293,16 @@ function SettingsScreen({ route }) {
     );
 }
 
-function Dashboard() {
-    return (
-        <View style={dash.conteiner}>
 
-        </View>
+const Dashboard = () => {
+
+    return (
+        <ScrollView style={dash.container}>
+
+
+        </ScrollView>
     );
-}
+};
 
 function Chat({ route }) {
 
@@ -382,19 +390,19 @@ function Chat({ route }) {
                 .select('id, nome, categoria')  // Selecionando a coluna 'categoria' também
                 .neq('id', id)  // Exclui o ID do usuário logado
                 .in('categoria', ['nutricionista', 'pais']);  // Filtra pelas categorias 'nutricionista' e 'pais'
-    
+
             if (error) {
                 console.error('Erro ao buscar usuários:', error.message);
                 return [];
             }
-    
+
             return data;  // Retorna os usuários que são 'nutricionista' ou 'pais', exceto o logado
         } catch (err) {
             console.error('Erro inesperado:', err);
             return [];
         }
     };
-    
+
     useEffect(() => {
         const loadUsers = async () => {
             const allUsers = await fetchUsers(id);
@@ -439,7 +447,7 @@ function Chat({ route }) {
                 )}
             />
 
-            
+
         </View>
     );
 
@@ -547,7 +555,7 @@ const Tab = createBottomTabNavigator();
 
 export default function Acesso() {
     const route = useRoute(); // Hook para acessar os parâmetros da rota
-    const { ok: id } = route.params || {}; // Desestrutura o parâmetro `ok` (id passado)
+    const { id: id } = route.params || {}; // Desestrutura o parâmetro `ok` (id passado)
 
     console.log('ID recebido no Acesso:', id); // Use para verificar se o valor está chegando
 
@@ -741,9 +749,91 @@ const config = StyleSheet.create({
 });
 
 const dash = StyleSheet.create({
-    conteiner: {
-
-    }
+    container: {
+        flex: 1,
+        backgroundColor: '#fff',
+        padding: 20,
+    },
+    title: {
+        fontSize: 20,
+        fontWeight: 'bold',
+        color: '#333',
+        marginBottom: 10,
+    },
+    chartContainer: {
+        backgroundColor: '#f0f0f0', // Fundo cinza para o quadrado
+        borderRadius: 16, // Bordas arredondadas
+        padding: 10,
+        marginVertical: 10,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    chartStyle: {
+        borderRadius: 16,
+        overflow: 'hidden', // Garante que as bordas arredondadas não sejam sobrescritas
+    },
+    header: {
+        alignItems: "center",
+        marginVertical: 20,
+    },
+    logo: {
+        width: 100,
+        height: 40,
+        resizeMode: "contain",
+    },
+    linha1: {
+        width: "80%",
+        height: 2,
+        backgroundColor: "red",
+        marginTop: 5,
+    },
+    dash1: {
+        flexDirection: "row",
+        justifyContent: "space-around",
+        marginVertical: 20,
+    },
+    caixa1: {
+        backgroundColor: "#F0F0F0",
+        padding: 15,
+        alignItems: "center",
+        justifyContent: "center",
+        borderRadius: 10,
+        width: "45%",
+    },
+    caixa2: {
+        backgroundColor: "#F0F0F0",
+        padding: 15,
+        alignItems: "center",
+        justifyContent: "center",
+        borderRadius: 10,
+        width: "45%",
+    },
+    textoCaixa: {
+        fontSize: 20,
+        fontWeight: "bold",
+    },
+    tituloCaixa: {
+        fontSize: 15,
+    },
+    numeroCaixa: {
+        fontSize: 25,
+        fontWeight: "bold",
+    },
+    chartContainer: {
+        backgroundColor: "#F0F0F0",
+        marginVertical: 10,
+        padding: 15,
+        borderRadius: 10,
+    },
+    chartTitle: {
+        fontSize: 16,
+        fontWeight: "bold",
+        marginBottom: 10,
+    },
+    icon: {
+        width: 30,
+        height: 30,
+    },
 });
 
 const chat = StyleSheet.create({

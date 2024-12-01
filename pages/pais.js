@@ -31,9 +31,64 @@ import { supabase } from '../supabase';
 import { useRoute } from '@react-navigation/native';
 
 
-
 // Defina algumas telas exemplo para as suas tabs
-function HomeScreen() {
+function HomeScreen({ route }) {
+    const [dados, setDados] = useState([]);
+    const { id } = route.params || {};
+
+    const fetchUserProfile = async (id) => {
+        try {
+            // Passo 1: Buscar o id_relacionado com o id do usuário
+            const { data, error } = await supabase
+                .from('profiles') // Nome da tabela
+                .select('id_relacionado') // Seleciona o campo id_relacionado
+                .eq('id', id) // Filtra pelo id do usuário
+                .single(); // Retorna apenas um registro
+
+            if (error) {
+                console.error('Erro ao buscar id_relacionado:', error.message);
+                return null; // Retorna null em caso de erro
+            }
+
+            const idRelacionado = data?.id_relacionado;
+
+            if (!idRelacionado) {
+                console.error('Usuário não tem um id_relacionado');
+                return null;
+            }
+
+            // Passo 2: Buscar as informações do usuário relacionado
+            const { data: relatedUserData, error: relatedUserError } = await supabase
+                .from('profiles') // Nome da tabela
+                .select('*') // Seleciona todas as colunas
+                .eq('id', idRelacionado) // Filtra pelo id_relacionado
+                .single(); // Retorna apenas um registro
+
+            if (relatedUserError) {
+                console.error('Erro ao buscar o perfil do usuário relacionado:', relatedUserError.message);
+                return null; // Retorna null em caso de erro
+            }
+
+            // Aqui você pode retornar os dados tanto do usuário original quanto do relacionado
+            // Exemplo: retornar um objeto com ambos os perfis
+            setDados(relatedUserData)
+
+        } catch (err) {
+            console.error('Erro inesperado ao buscar perfil:', err);
+            return null;
+        }
+    };
+
+    useEffect(() => {
+        fetchUserProfile(id); // Chama a função para buscar os dados
+    }, []);
+
+
+
+    const handlePdf = async () => {
+        console.log('opa')
+    };
+
     return (
         <View style={index.conteiner}>
             <View style={index.header}>
@@ -45,7 +100,7 @@ function HomeScreen() {
             <View style={index.perfil}>
 
                 <Image style={index.imagemAluno} source={require('../assets/img/alunoFt.png')}></Image>
-                <Text style={index.nomeAluno}>Nome do Aluno</Text>
+                <Text style={index.nomeAluno}>{dados.nome}</Text>
             </View>
 
             <View style={index.contato}>
@@ -58,7 +113,7 @@ function HomeScreen() {
                             <Ionicons name={'call'} size={24} color={'#000'} />
                             <Text style={index.desc}> Telefone </Text>
                         </View>
-                        <Text style={index.assunto}> (+55) 11 12345-6789 </Text>
+                        <Text style={index.assunto}> {dados.telefone} </Text>
                     </View>
 
                     <View style={index.box}>
@@ -66,14 +121,14 @@ function HomeScreen() {
                             <Ionicons name={'mail'} size={24} color={'#000'} />
                             <Text style={index.desc}> Email </Text>
                         </View>
-                        <Text style={index.assunto}> nome.sobrenome@portalsesisp.org.br </Text>
+                        <Text style={index.assunto}> {dados.email} </Text>
                     </View>
                 </View>
 
             </View>
 
             <View style={index.botao}>
-                <Pressable onPress={() => console.log('opa')} style={index.botaoEntrar}>
+                <Pressable onPress={handlePdf} style={index.botaoEntrar}>
                     <Text style={index.textoBotao}>Enviar Laudo</Text>
                     <Ionicons name={'arrow-up'} size={24} color={'#fff'} />
                 </Pressable>
@@ -82,21 +137,48 @@ function HomeScreen() {
     );
 }
 
-function SettingsScreen() {
+function SettingsScreen({ route }) {
 
     const [isToggled, setIsToggled] = useState(false);
+    const [dados, setDados] = useState([]);
+    const { id } = route.params || {};
 
     const toggleSwitch = () => {
         setIsToggled(prev => !prev);
     };
 
+    const fetchUserProfile = async (id) => {
+
+        try {
+            const { data, error } = await supabase
+                .from('profiles') // Nome da tabela
+                .select('*') // Seleciona todas as colunas
+                .eq('id', id) // Filtra pelo id do usuário
+                .single(); // Retorna apenas um registro
+
+            if (error) {
+                console.error('Erro ao buscar perfil:', error.message);
+                return null; // Retorna null em caso de erro
+            }
+
+            setDados(data)
+        } catch (err) {
+            console.error('Erro inesperado ao buscar perfil:', err);
+            return null;
+        }
+    };
+
+    useEffect(() => {
+        fetchUserProfile(id); // Chama a função para buscar os dados
+    }, []);
+
     return (
-        <View style={{ flex: 0.9, justifyContent: 'center', alignItems: 'center', flexDirection: 'column' }}>
+        <View style={{ flex: 0.9, justifyContent: 'center', alignItems: 'center', flexDirection: 'column', backgroundColor: `#fff` }}>
 
             <View style={config.perfil}>
 
                 <Image style={config.imagemAluno} source={require('../assets/img/alunoFt.png')}></Image>
-                <Text style={config.nomeAluno}>Nome do Pai/Mãe</Text>
+                <Text style={config.nomeAluno}> {dados.nome} </Text>
             </View>
 
             <View style={config.contato}>
@@ -109,7 +191,7 @@ function SettingsScreen() {
                             <Ionicons name={'call'} size={24} color={'#000'} />
                             <Text style={config.desc}> Telefone </Text>
                         </View>
-                        <Text style={config.assunto}> (+55) 11 12345-6789 </Text>
+                        <Text style={config.assunto}> {dados.telefone} </Text>
                     </View>
 
                     <View style={config.box}>
@@ -117,7 +199,7 @@ function SettingsScreen() {
                             <Ionicons name={'mail'} size={24} color={'#000'} />
                             <Text style={config.desc}> Email </Text>
                         </View>
-                        <Text style={config.assunto}> nome.sobrenome@portalsesisp.org.br </Text>
+                        <Text style={config.assunto}> {dados.email} </Text>
                     </View>
                 </View>
 
@@ -150,6 +232,7 @@ function SettingsScreen() {
                     </View>
                 </View>
             </View>
+
         </View >
     );
 }
@@ -165,73 +248,6 @@ function Chat({ route }) {
         console.log('Input na pesquisa:', text); // Para visualizar a entrada atual
     };
 
-    // const [data, setData] = useState([
-    //         { id: 1, nome: 'Pai do aluno1', ultimaMensagem: 'Estou com dúvidas sobre a tarefa do aluno 1', telefone: '(+55) 11 12345-5678' },
-    //         { id: 2, nome: 'Pai do aluno2', ultimaMensagem: '', telefone: '(+55) 11 12345-5678' },
-    //         { id: 3, nome: 'Pai do aluno3', ultimaMensagem: '', telefone: '(+55) 11 12345-5678' },
-    //         { id: 4, nome: 'Pai do aluno4', ultimaMensagem: 'Estou com dúvidas sobre a tarefa do aluno 4', telefone: '(+55) 11 12345-5678' },
-    //         { id: 5, nome: 'Pai do aluno5', ultimaMensagem: '', telefone: '(+55) 11 12345-5678' }
-    // ]);
-
-    // const filteredData = data.filter(item => {
-    //     // Se houver uma pesquisa, retorne true se o nome contém a pesquisa
-    //     if (pesquisa) {
-    //         return item.nome.toLowerCase().includes(pesquisa.toLowerCase());
-    //     } else {
-    //         // Caso contrário, retorne true se ultimaMensagem não estiver vazia
-    //         return item.ultimaMensagem !== '';
-    //     }
-    // });
-
-    // const [mensagens, setMensagens] = useState({
-    //     1: [
-    //         { id: 1, text: `Olá, eu sou o 1. Como você está?`, sender: "me" },
-    //         { id: 2, text: "Estou bem, obrigado!", sender: "outro" },
-    //         { id: 3, text: `Estou com dúvidas sobre a tarefa do aluno 1`, sender: "me" }
-    //     ],
-    //     2: [
-    //         { id: 1, text: ``, sender: "" },
-    //     ],
-    //     3: [
-    //         { id: 1, text: ``, sender: "" },
-    //     ],
-    //     4: [
-    //         { id: 1, text: `Olá, eu sou o 4. Como você está?`, sender: "me" },
-    //         { id: 2, text: "Estou bem, obrigado!", sender: "me" },
-    //         { id: 3, text: `Estou com dúvidas sobre a tarefa do aluno 4`, sender: "me" }
-    //     ],
-    //     5: [
-    //         { id: 1, text: ``, sender: "" },
-    //     ]
-    // });
-
-    // const handleSendMessage = (id, newMessage) => {
-    //     // Verifica se há mensagens para o contato específico
-    //     if (mensagens[id]) {
-    //         // Adiciona a nova mensagem ao array de mensagens
-    //         const updatedMessages = [...mensagens[id], newMessage];
-
-    //         // Atualiza as mensagens do contato
-    //         setMensagens(prevMensagens => ({
-    //             ...prevMensagens,
-    //             [id]: updatedMessages // Atualiza as mensagens do contato
-    //         }));
-
-    //         // Atualiza o valor de ultimaMensagem dentro de data
-    //         setData(prevData => {
-    //             return prevData.map(contato => {
-    //                 if (contato.id === id) {
-    //                     return {
-    //                         ...contato,
-    //                         ultimaMensagem: newMessage.text // Atualiza a ultimaMensagem
-    //                     };
-    //                 }
-    //                 return contato; // Retorna os outros contatos inalterados
-    //             });
-    //         });
-    //     }
-    // };
-
 
     const fetchUsers = async (id) => {
         try {
@@ -240,19 +256,19 @@ function Chat({ route }) {
                 .select('id, nome, categoria')  // Selecionando a coluna 'categoria' também
                 .neq('id', id)  // Exclui o ID do usuário logado
                 .in('categoria', ['nutricionista', 'pais']);  // Filtra pelas categorias 'nutricionista' e 'pais'
-    
+
             if (error) {
                 console.error('Erro ao buscar usuários:', error.message);
                 return [];
             }
-    
+
             return data;  // Retorna os usuários que são 'nutricionista' ou 'pais', exceto o logado
         } catch (err) {
             console.error('Erro inesperado:', err);
             return [];
         }
     };
-    
+
     useEffect(() => {
         const loadUsers = async () => {
             const allUsers = await fetchUsers(id);
@@ -297,7 +313,7 @@ function Chat({ route }) {
                 )}
             />
 
-            
+
         </View>
     );
 
@@ -309,7 +325,7 @@ const Tab = createBottomTabNavigator();
 export default function Acesso() {
 
     const route = useRoute(); // Hook para acessar os parâmetros da rota
-    const { ok: id } = route.params || {}; // Desestrutura o parâmetro `ok` (id passado)
+    const { id: id } = route.params || {}; // Desestrutura o parâmetro `ok` (id passado)
 
     console.log('ID recebido no Acesso:', id);
 
@@ -351,10 +367,10 @@ export default function Acesso() {
                 }
             })}
         >
-            <Tab.Screen  initialParams={{ id }} name="Home" component={HomeScreen} options={{ headerShown: false }} />
+            <Tab.Screen initialParams={{ id }} name="Home" component={HomeScreen} options={{ headerShown: false }} />
 
-            <Tab.Screen  initialParams={{ id }} name="Chatbox" component={Chat} options={{ headerShown: false }} />
-            <Tab.Screen  initialParams={{ id }} name="Settings" component={SettingsScreen} options={{ headerShown: false }} />
+            <Tab.Screen initialParams={{ id }} name="Chatbox" component={Chat} options={{ headerShown: false }} />
+            <Tab.Screen initialParams={{ id }} name="Settings" component={SettingsScreen} options={{ headerShown: false }} />
 
         </Tab.Navigator>
     );

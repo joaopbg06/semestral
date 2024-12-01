@@ -13,6 +13,7 @@ import {
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { useRoute } from '@react-navigation/native';
+import { supabase } from '../supabase';
 
 export default function Bem_Vindo() {
     const navigation = useNavigation();
@@ -22,8 +23,12 @@ export default function Bem_Vindo() {
     const { id } = route.params;
 
     const [isChecked, setIsChecked] = useState(false);
+
+
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
+
+
     const [passwordVisible, setPasswordVisible] = useState(false);
     const [confirmPasswordVisible, setConfirmPasswordVisible] = useState(false);
     const [passwordStrength, setPasswordStrength] = useState(0);
@@ -34,7 +39,6 @@ export default function Bem_Vindo() {
         hasSymbol: false,
         hasMinLength: false,
     });
-    const progressBarWidth = `${(passwordStrength / 5) * 100}%`;
     const [progressWidth] = useState(new Animated.Value(0));
 
     const animateProgressBar = (strength) => {
@@ -51,8 +55,6 @@ export default function Bem_Vindo() {
     React.useEffect(() => {
         animateProgressBar(passwordStrength);
     }, [passwordStrength]);
-
-
 
     const toggleCheck = () => {
         setIsChecked(prevState => !prevState);
@@ -100,19 +102,63 @@ export default function Bem_Vindo() {
             default:
                 return '#E6E6E6'; // Cinza para zero critério
         }
-    };
-
+    }
 
     const getTextColor = (isValid) => {
         return isValid ? 'green' : 'red';
     };
 
     const handleSenha = () => {
-        const teste = id
-        navigation.navigate(usuario, {
-            ok : teste
-        })
+        const id = id;
+
+        // Verifica se a força da senha é 5 (máxima)
+        if (passwordStrength === 5) {
+
+            // Verifica se as senhas coincidem
+            if (password === confirmPassword) {
+
+                // Chama a função para atualizar a senha
+                updatePassword(password, id);
+
+                // Após a atualização da senha, você pode navegar para outra tela ou mostrar uma mensagem de sucesso.
+                // Exemplo de navegação para a tela do usuário:
+                navigation.navigate(usuario, { id: id });
+            } else {
+                // Se as senhas não coincidirem
+                console.error('As senhas não coincidem.');
+            }
+
+        } else {
+            // Se a senha não atender ao critério de força
+            console.error('A senha não é forte o suficiente.');
+        }
     };
+
+
+    const updatePassword = async (newPassword, userId) => {
+        try {
+            // Verifica se o ID do usuário foi passado
+            if (!userId) {
+                console.error('ID do usuário não fornecido');
+                return;
+            }
+    
+            // Atualiza a senha do usuário com o ID fornecido
+            const { error } = await supabase.auth.updateUser({
+                password: newPassword, // A nova senha que o usuário fornece
+            });
+    
+            if (error) {
+                console.error('Erro ao atualizar a senha:', error.message);
+                return;
+            }
+    
+            console.log('Senha atualizada com sucesso!');
+        } catch (err) {
+            console.error('Erro inesperado:', err);
+        }
+    };
+    
 
     return (
 
@@ -152,7 +198,6 @@ export default function Bem_Vindo() {
                         </View>
                     </View>
 
-                    {/* Barra de força da senha */}
                     {/* Barra de força da senha */}
                     <View style={styles.progressBarContainer}>
                         <Animated.View

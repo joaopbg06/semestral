@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Ionicons } from '@expo/vector-icons';
 import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
@@ -17,11 +17,56 @@ import {
     Modal
 } from 'react-native';
 
+import { supabase } from '../supabase';
+
+
 // Componente Post
-const Post = ({ texto, imagens, imagem, tipo, opcoes, id, del }) => {
+const Post = ({ texto, imagens, imagem, tipo, opcoes, id, del, user_id }) => {
 
     const [modalVisible, setModalVisible] = useState(false);
     const [selectedImage, setSelectedImage] = useState(null);
+    const [userProfile, setUserProfile] = useState(null);
+
+    const fetchUserProfile = async (userId) => {
+
+        try {
+            // Realiza a consulta na tabela "profiles" filtrando pelo "id" do usuário
+            const { data, error } = await supabase
+                .from('profiles') // Nome da tabela onde os dados do usuário estão
+                .select('*') // Seleciona todas as colunas
+                .eq('id', userId) // Filtra pela coluna 'id' com o valor de userId
+                .single(); // Retorna apenas um registro (único)
+
+            if (error) {
+                console.error('Erro ao buscar perfil:', error.message);
+                return null; // Retorna null em caso de erro
+            }
+
+            setUserProfile(data);
+
+
+            // Retorna os dados do perfil encontrado
+        } catch (err) {
+            console.error('Erro inesperado ao buscar perfil:', err);
+            return null; // Retorna null em caso de erro inesperado
+        }
+    };
+
+    const formatDate = (isoDate) => {
+        const date = new Date(isoDate);  // Converte a string ISO para um objeto Date
+        const day = String(date.getDate()).padStart(2, '0'); // Obtém o dia e formata com dois dígitos
+        const month = String(date.getMonth() + 1).padStart(2, '0'); // Obtém o mês (getMonth começa em 0, então somamos 1) e formata
+        const year = date.getFullYear();  // Obtém o ano
+
+        return `${day}/${month}/${year}`;  // Retorna a data no formato dd/mm/yyyy
+    };
+
+    useEffect(() => {
+        fetchUserProfile(user_id)
+    }, [user_id])
+
+
+
 
     const openModal = (imageUri) => {
         setSelectedImage(imageUri);
@@ -37,6 +82,10 @@ const Post = ({ texto, imagens, imagem, tipo, opcoes, id, del }) => {
         del(id); // Chama a função com o ID do post
     };
 
+    if (userProfile === null) {
+        return <Text>Carregando...</Text>;  // Exibe um carregando enquanto os dados não chegam
+    }
+
     return (
         <View style={[styles.container]}>
 
@@ -45,8 +94,8 @@ const Post = ({ texto, imagens, imagem, tipo, opcoes, id, del }) => {
                 <View style={styles.box}>
                     <Image style={styles.img} source={require(`../assets/img/alunoFt.png`)} />
 
-                    <Text style={styles.nome}>Nutricionista</Text>
-                    <Text style={styles.time}>08/09/2024</Text>
+                    <Text style={styles.nome}> {userProfile.nome} </Text>
+                    <Text style={styles.time}> {formatDate(userProfile.created_at)} </Text>
                 </View>
 
                 <Pressable onPress={handleDelete}>
