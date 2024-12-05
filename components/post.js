@@ -21,36 +21,35 @@ import { supabase } from '../supabase';
 
 
 // Componente Post
-const Post = ({ texto, imagens, imagem, tipo, opcoes, id, del, user_id }) => {
+const Post = ({ texto, imagens, imagem, tipo, opcoes, id, del, user_id, view_user }) => {
 
     const [modalVisible, setModalVisible] = useState(false);
     const [selectedImage, setSelectedImage] = useState(null);
     const [userProfile, setUserProfile] = useState(null);
 
     const fetchUserProfile = async (userId) => {
-
         try {
-            // Realiza a consulta na tabela "profiles" filtrando pelo "id" do usuário
             const { data, error } = await supabase
                 .from('profiles') // Nome da tabela onde os dados do usuário estão
                 .select('*') // Seleciona todas as colunas
-                .eq('id', userId) // Filtra pela coluna 'id' com o valor de userId
-                .single(); // Retorna apenas um registro (único)
+                .eq('id', userId); // Filtra pela coluna 'id' com o valor de userId
 
             if (error) {
                 console.error('Erro ao buscar perfil:', error.message);
                 return null; // Retorna null em caso de erro
             }
 
-            setUserProfile(data);
-
-
-            // Retorna os dados do perfil encontrado
+            if (data && data.length > 0) {
+                setUserProfile(data[0]); // Seleciona o primeiro item caso existam múltiplos registros
+            } else {
+                console.error('Nenhum perfil encontrado para o usuário:', userId);
+            }
         } catch (err) {
             console.error('Erro inesperado ao buscar perfil:', err);
             return null; // Retorna null em caso de erro inesperado
         }
     };
+
 
     const formatDate = (isoDate) => {
         const date = new Date(isoDate);  // Converte a string ISO para um objeto Date
@@ -64,9 +63,6 @@ const Post = ({ texto, imagens, imagem, tipo, opcoes, id, del, user_id }) => {
     useEffect(() => {
         fetchUserProfile(user_id)
     }, [user_id])
-
-
-
 
     const openModal = (imageUri) => {
         setSelectedImage(imageUri);
@@ -98,9 +94,14 @@ const Post = ({ texto, imagens, imagem, tipo, opcoes, id, del, user_id }) => {
                     <Text style={styles.time}> {formatDate(userProfile.created_at)} </Text>
                 </View>
 
-                <Pressable onPress={handleDelete}>
-                    <Ionicons name="trash-outline" size={22} color={'#ff0000'} />
-                </Pressable>
+                {view_user ? (
+                    <Pressable onPress={handleDelete}>
+                        <Ionicons name="trash-outline" size={22} color={'#ff0000'} />
+                    </Pressable>
+                ) : null}
+
+
+
             </View>
 
             {tipo === 'cardapio' && imagem && (

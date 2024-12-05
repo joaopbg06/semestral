@@ -27,8 +27,10 @@ function HomeScreen() {
     const [filtroAtivo, setFiltroAtivo] = useState('Geral');
     const [posts, setPosts] = useState([]);
 
+
     const handleFiltroPress = (filtro) => {
         setFiltroAtivo(filtro);
+        console.log('Filtro ativo alterado para:', filtro);
     };
 
     const fetchPosts = async () => {
@@ -38,94 +40,130 @@ function HomeScreen() {
                 .select('*'); // Busca todas as colunas
 
             if (error) {
-                console.error('Erro ao buscar dados:', error.message);
+                console.error('Erro ao buscar posts:', error.message);
                 return;
             }
 
+            console.log('Posts recebidos do banco de dados:', data); // Verificar os dados recebidos
             setPosts(data); // Atualiza o estado "posts" com os dados retornados
         } catch (err) {
-            console.error('Erro inesperado:', err);
+            console.error('Erro inesperado ao buscar posts:', err);
         }
     };
 
-    // useEffect para buscar os dados ao montar o componente
     useEffect(() => {
-        fetchPosts(); // Chama a função para buscar os dados
+        fetchPosts(); // Busca os posts ao montar o componente
     }, []);
+
+    const deletePost = async (postId) => {
+        try {
+            const { error } = await supabase
+                .from('post') // Nome da tabela
+                .delete()     // Método para deletar
+                .eq('id', postId); // Condição: deleta o post com o ID correspondente
+
+            if (error) {
+                console.error('Erro ao deletar post:', error.message);
+                alert('Não foi possível deletar o post. Tente novamente.');
+            } else {
+                alert('Post deletado com sucesso!');
+                fetchPosts(); // Atualiza a lista de posts
+            }
+        } catch (err) {
+            console.error('Erro inesperado ao deletar post:', err);
+            alert('Ocorreu um erro inesperado ao deletar o post.');
+        }
+    };
+
+    // Filtra os posts com base no filtro ativo
+    const filteredPosts = filtroAtivo === 'Geral'
+        ? posts // Exibe todos os posts
+        : posts.filter(post => {
+            const postTipo = post.tipo.toLowerCase(); // Converter o tipo do post para minúsculo
+            const filtro = filtroAtivo.toLowerCase(); // Converter o filtro ativo para minúsculo
+            console.log(`Post: ${post.id} - Tipo: ${postTipo}, Filtro Ativo: ${filtro}`);
+            return postTipo === filtro;
+        });
+
+    console.log('Posts após aplicação do filtro:', filteredPosts);
 
 
     return (
         <View style={{ flex: 1, alignItems: 'center', backgroundColor: '#fff' }}>
 
-            <View style={index.header}>
-                <Image style={index.logo} source={require('../assets/img/logo.png')}></Image>
-                <View style={index.linha1}></View>
-                <View style={index.filtroBox}>
+            <View style={home.header}>
+                <Image style={home.logo} source={require('../assets/img/logo.png')}></Image>
+
+                <View style={home.linha1}></View>
+
+                <View style={home.filtroBox}>
                     <Pressable
-                        style={filtroAtivo === 'Geral' ? index.filtroAtivo : index.filtro}
+                        style={filtroAtivo === 'Geral' ? home.filtroAtivo : home.filtro}
                         onPress={() => handleFiltroPress('Geral')}
                     >
-                        <Text style={index.textoFiltro}>Geral</Text>
+                        <Text style={home.textoFiltro}>Geral</Text>
                     </Pressable>
 
                     <Pressable
-                        style={filtroAtivo === 'Enquetes' ? index.filtroAtivo : index.filtro}
-                        onPress={() => handleFiltroPress('Enquetes')}
+                        style={filtroAtivo === 'Enquete' ? home.filtroAtivo : home.filtro}
+                        onPress={() => handleFiltroPress('Enquete')}
                     >
-                        <Text style={index.textoFiltro}>Enquetes</Text>
+                        <Text style={home.textoFiltro}>Enquetes</Text>
                     </Pressable>
 
                     <Pressable
-                        style={filtroAtivo === 'Cardápio' ? index.filtroAtivo : index.filtro}
-                        onPress={() => handleFiltroPress('Cardápio')}
+                        style={filtroAtivo === 'Cardapio' ? home.filtroAtivo : home.filtro}
+                        onPress={() => handleFiltroPress('Cardapio')}
                     >
-                        <Text style={index.textoFiltro}>Cardápio</Text>
+                        <Text style={home.textoFiltro}>Cardápio</Text>
                     </Pressable>
 
                     <Pressable
-                        style={filtroAtivo === 'Sugestões' ? index.filtroAtivo : index.filtro}
-                        onPress={() => handleFiltroPress('Sugestões')}
+                        style={filtroAtivo === 'Sugestao' ? home.filtroAtivo : home.filtro}
+                        onPress={() => handleFiltroPress('Sugestao')}
                     >
-                        <Text style={index.textoFiltro}>Sugestões</Text>
+                        <Text style={home.textoFiltro}>Sugestões</Text>
                     </Pressable>
-
                 </View>
-                <View style={index.linha2}></View>
+
+                <View style={home.linha2}></View>
             </View>
 
-            <View style={index.main}>
+            <View style={home.main}>
 
                 <FlatList
-                    data={posts}
+                    data={filteredPosts} // Usa os posts filtrados
                     keyExtractor={(item, index) => index.toString()}
                     renderItem={({ item }) => (
-                        <>
+                        <View>
                             <Post
                                 texto={item.texto}
                                 imagens={item.imagens}
                                 imagem={item.imagem}
                                 tipo={item.tipo}
                                 opcoes={item.opcoes}
+                                id={item.id}
+                                del={deletePost}
+                                user_id={item.user_id}
+                                view_user={false}
                             />
                             <View style={{
                                 width: '95%',
                                 height: 2,
                                 backgroundColor: '#ff0000',
                                 opacity: 0.18,
-                                alignSelf: 'center', // Centraliza a linha divisória
-                                marginVertical: 25, // Espaçamento vertical entre posts
+                                alignSelf: 'center',
+                                marginVertical: 25,
                             }} />
-                        </>
+                        </View>
                     )}
                     style={{
                         width: '100%', marginTop: 20
                     }}
                 />
-
             </View>
 
         </View>
-
     );
 }
 
@@ -147,12 +185,12 @@ function SettingsScreen({ route }) {
                 .select('*') // Seleciona todas as colunas
                 .eq('id', id) // Filtra pelo id do usuário
                 .single(); // Retorna apenas um registro
-    
+
             if (error) {
                 console.error('Erro ao buscar perfil:', error.message);
                 return null; // Retorna null em caso de erro
             }
-    
+
             setDados(data)
         } catch (err) {
             console.error('Erro inesperado ao buscar perfil:', err);
@@ -273,8 +311,8 @@ export default function Acesso() {
                 }
             })}
         >
-            <Tab.Screen  initialParams={{ id }} name="Home" component={HomeScreen} options={{ headerShown: false }} />
-            <Tab.Screen  initialParams={{ id }} name="Settings" component={SettingsScreen} options={{ headerShown: false }} />
+            <Tab.Screen initialParams={{ id }} name="Home" component={HomeScreen} options={{ headerShown: false }} />
+            <Tab.Screen initialParams={{ id }} name="Settings" component={SettingsScreen} options={{ headerShown: false }} />
         </Tab.Navigator>
     );
 }
@@ -333,7 +371,7 @@ const config = StyleSheet.create({
     }
 });
 
-const index = StyleSheet.create({
+const home = StyleSheet.create({
     header: {
         marginTop: 10,
         width: '100%',

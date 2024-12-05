@@ -11,7 +11,7 @@ import * as FileSystem from "expo-file-system";
 import { decode } from 'base64-arraybuffer';
 
 
-const Adicionar = ({ visible, onClose, user_id }) => {
+const Adicionar = ({ visible, onClose, user_id, fetchPosts }) => {
 
 
     // picker
@@ -169,6 +169,7 @@ const Adicionar = ({ visible, onClose, user_id }) => {
                     alert('Ocorreu um erro ao enviar os dados. Tente novamente.');
                 } else {
                     alert('Dados enviados com sucesso!');
+                    await fetchPosts()
                     onClose(); // Fecha o modal após o envio
                 }
             } catch (err) {
