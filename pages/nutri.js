@@ -315,74 +315,6 @@ function Chat({ route }) {
         console.log('Input na pesquisa:', text); // Para visualizar a entrada atual
     };
 
-    // const [data, setData] = useState([
-    //         { id: 1, nome: 'Pai do aluno1', ultimaMensagem: 'Estou com dúvidas sobre a tarefa do aluno 1', telefone: '(+55) 11 12345-5678' },
-    //         { id: 2, nome: 'Pai do aluno2', ultimaMensagem: '', telefone: '(+55) 11 12345-5678' },
-    //         { id: 3, nome: 'Pai do aluno3', ultimaMensagem: '', telefone: '(+55) 11 12345-5678' },
-    //         { id: 4, nome: 'Pai do aluno4', ultimaMensagem: 'Estou com dúvidas sobre a tarefa do aluno 4', telefone: '(+55) 11 12345-5678' },
-    //         { id: 5, nome: 'Pai do aluno5', ultimaMensagem: '', telefone: '(+55) 11 12345-5678' }
-    // ]);
-
-    // const filteredData = data.filter(item => {
-    //     // Se houver uma pesquisa, retorne true se o nome contém a pesquisa
-    //     if (pesquisa) {
-    //         return item.nome.toLowerCase().includes(pesquisa.toLowerCase());
-    //     } else {
-    //         // Caso contrário, retorne true se ultimaMensagem não estiver vazia
-    //         return item.ultimaMensagem !== '';
-    //     }
-    // });
-
-    // const [mensagens, setMensagens] = useState({
-    //     1: [
-    //         { id: 1, text: `Olá, eu sou o 1. Como você está?`, sender: "me" },
-    //         { id: 2, text: "Estou bem, obrigado!", sender: "outro" },
-    //         { id: 3, text: `Estou com dúvidas sobre a tarefa do aluno 1`, sender: "me" }
-    //     ],
-    //     2: [
-    //         { id: 1, text: ``, sender: "" },
-    //     ],
-    //     3: [
-    //         { id: 1, text: ``, sender: "" },
-    //     ],
-    //     4: [
-    //         { id: 1, text: `Olá, eu sou o 4. Como você está?`, sender: "me" },
-    //         { id: 2, text: "Estou bem, obrigado!", sender: "me" },
-    //         { id: 3, text: `Estou com dúvidas sobre a tarefa do aluno 4`, sender: "me" }
-    //     ],
-    //     5: [
-    //         { id: 1, text: ``, sender: "" },
-    //     ]
-    // });
-
-    // const handleSendMessage = (id, newMessage) => {
-    //     // Verifica se há mensagens para o contato específico
-    //     if (mensagens[id]) {
-    //         // Adiciona a nova mensagem ao array de mensagens
-    //         const updatedMessages = [...mensagens[id], newMessage];
-
-    //         // Atualiza as mensagens do contato
-    //         setMensagens(prevMensagens => ({
-    //             ...prevMensagens,
-    //             [id]: updatedMessages // Atualiza as mensagens do contato
-    //         }));
-
-    //         // Atualiza o valor de ultimaMensagem dentro de data
-    //         setData(prevData => {
-    //             return prevData.map(contato => {
-    //                 if (contato.id === id) {
-    //                     return {
-    //                         ...contato,
-    //                         ultimaMensagem: newMessage.text // Atualiza a ultimaMensagem
-    //                     };
-    //                 }
-    //                 return contato; // Retorna os outros contatos inalterados
-    //             });
-    //         });
-    //     }
-    // };
-
-
     const fetchUsers = async (id) => {
         try {
             const { data, error } = await supabase
@@ -412,9 +344,10 @@ function Chat({ route }) {
         loadUsers();
     }, [id]);
 
-
-
-
+    // Filtra os usuários com base na pesquisa
+    const filteredUsers = users.filter((user) =>
+        user.nome.toLowerCase().includes(pesquisa.toLowerCase())
+    );
 
     return (
         <View style={{ flex: 1, alignItems: 'center', justifyContent: 'flex-start', backgroundColor: `#fff` }}>
@@ -441,7 +374,7 @@ function Chat({ route }) {
 
             <FlatList style={{ flex: 1, width: '90%' }}
                 keyExtractor={(item) => String(item.id)}
-                data={users}
+                data={filteredUsers} // Use os usuários filtrados
                 renderItem={({ item }) => (
                     <ContatoPai data={item} ida={id} />
                 )}
@@ -452,6 +385,7 @@ function Chat({ route }) {
     );
 
 }
+
 
 function Laudo() {
 

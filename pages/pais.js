@@ -248,7 +248,6 @@ function Chat({ route }) {
         console.log('Input na pesquisa:', text); // Para visualizar a entrada atual
     };
 
-
     const fetchUsers = async (id) => {
         try {
             const { data, error } = await supabase
@@ -278,9 +277,10 @@ function Chat({ route }) {
         loadUsers();
     }, [id]);
 
-
-
-
+    // Filtra os usuários com base na pesquisa
+    const filteredUsers = users.filter((user) =>
+        user.nome.toLowerCase().includes(pesquisa.toLowerCase())
+    );
 
     return (
         <View style={{ flex: 1, alignItems: 'center', justifyContent: 'flex-start', backgroundColor: `#fff` }}>
@@ -307,7 +307,7 @@ function Chat({ route }) {
 
             <FlatList style={{ flex: 1, width: '90%' }}
                 keyExtractor={(item) => String(item.id)}
-                data={users}
+                data={filteredUsers} // Use os usuários filtrados
                 renderItem={({ item }) => (
                     <ContatoPai data={item} ida={id} />
                 )}
