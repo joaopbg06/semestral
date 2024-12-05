@@ -44,7 +44,7 @@ function HomeScreen() {
                 return;
             }
 
-            console.log('Posts recebidos do banco de dados:', data); // Verificar os dados recebidos
+
             setPosts(data); // Atualiza o estado "posts" com os dados retornados
         } catch (err) {
             console.error('Erro inesperado ao buscar posts:', err);
@@ -85,7 +85,6 @@ function HomeScreen() {
             return postTipo === filtro;
         });
 
-    console.log('Posts após aplicação do filtro:', filteredPosts);
 
 
     return (
