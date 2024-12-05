@@ -109,7 +109,6 @@ export default function Bem_Vindo() {
     };
 
     const handleSenha = () => {
-        const id = id;
 
         // Verifica se a força da senha é 5 (máxima)
         if (passwordStrength === 5) {

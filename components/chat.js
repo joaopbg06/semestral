@@ -3,9 +3,10 @@ import { View, Text, TextInput, TouchableOpacity, FlatList, StyleSheet, Image } 
 import { Ionicons } from '@expo/vector-icons';
 import { supabase } from '../supabase';
 
-const ChatApp = ({ dados, mensagens, onClose, loggedUserId, fetchLastMessage }) => {
+const ChatApp = ({ dados, mensagens, onClose, loggedUserId, fetchLastMessage, handleUpdateMessage }) => {
     const [messages, setMessages] = useState(mensagens);
     const [newMessage, setNewMessage] = useState('');
+    const [lastMessage, setLastMessage] = useState(null);
 
     const sendMessage = async (receiverId, content, sender_id) => {
         try {
@@ -34,19 +35,30 @@ const ChatApp = ({ dados, mensagens, onClose, loggedUserId, fetchLastMessage }) 
         setMessages(mensagens);
     }, [mensagens]);
 
-    useEffect(() => {
-        const loadLastMessage = async () => {
-            if (loggedUserId && dados.id) {
-                const message = await fetchLastMessage(loggedUserId, dados.id);
-                if (message && !messages.some((msg) => msg.id === message.id)) {
-                    setMessages((prevMessages) => [message, ...prevMessages]); // Evita duplicação
-                }
-            }
-        };
 
-        loadLastMessage();
-        console.log('Carregou última mensagem');
-    }, [fetchLastMessage, loggedUserId, dados.id, messages]);
+
+
+
+    const handleFechar = async () => {
+        try {
+            // Aguarda o resultado de fetchLastMessage
+            const message = await fetchLastMessage(dados.id, loggedUserId);
+            
+            // Atualiza o estado local
+            setLastMessage(message);
+    
+            // Notifica o componente pai ou qualquer lógica de atualização
+            handleUpdateMessage(message);
+    
+            // Só fecha se lastMessage ou message forem válidos
+            if (message) {
+                onClose(); // Chama a função de fechar
+            }
+        } catch (error) {
+            console.error("Erro ao buscar ou atualizar a mensagem:", error);
+        }
+    };
+    
 
     // Função para enviar mensagem
     const handleSendMessage = async () => {
@@ -61,10 +73,15 @@ const ChatApp = ({ dados, mensagens, onClose, loggedUserId, fetchLastMessage }) 
         // Carregar as mensagens novamente após enviar
         const updatedMessages = await fetchMessages(loggedUserId, dados.id);
         setMessages(updatedMessages); // Atualiza com as mensagens mais recentes
+
+
     };
 
     // Função para buscar todas as mensagens entre dois usuários
     const fetchMessages = async (loggedUserId, otherUserId) => {
+
+        console.log('sender_id: ' + loggedUserId)
+        console.log('receiver_id: ' + otherUserId)
         try {
             const { data, error } = await supabase
                 .from('messages')
@@ -110,7 +127,7 @@ const ChatApp = ({ dados, mensagens, onClose, loggedUserId, fetchLastMessage }) 
         <View style={styles.container}>
             {/* Cabeçalho do Chat */}
             <View style={styles.header}>
-                <TouchableOpacity onPress={onClose}>
+                <TouchableOpacity onPress={handleFechar}>
                     <Ionicons name="arrow-back-outline" size={20} color="#000" />
                 </TouchableOpacity>
 

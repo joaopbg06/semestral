@@ -118,6 +118,11 @@ const ContatoPai = ({ data, ida }) => {
         setModalVisible(true); // Abre o modal
     };
 
+    const handleUpdateMessage = (message) => {
+        setLastMessage(message);
+
+    };
+
     return (
         <View>
             {/* Botão para abrir o modal */}
@@ -147,6 +152,7 @@ const ContatoPai = ({ data, ida }) => {
                     dados={dados}
                     loggedUserId={ida}
                     fetchLastMessage={fetchLastMessage} // Passando a função fetchLastMessage para o ChatApp
+                    handleUpdateMessage={handleUpdateMessage}
                 />
             </Modal>
         </View>
