@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Ionicons } from '@expo/vector-icons';
 import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
@@ -14,18 +14,23 @@ import {
     TouchableWithoutFeedback,
     Pressable,
     FlatList,
-    Modal
+    Modal,
+    ScrollView,
+    ActivityIndicator
 } from 'react-native';
+
+
 
 import { supabase } from '../supabase';
 
 
-// Componente Post
-const Post = ({ texto, imagens, imagem, tipo, opcoes, id, del, user_id, view_user }) => {
+
+const Post = ({ texto, imagens, tipo, opcoes, id, del, user_id, view_user }) => {
 
     const [modalVisible, setModalVisible] = useState(false);
     const [selectedImage, setSelectedImage] = useState(null);
     const [userProfile, setUserProfile] = useState(null);
+    const [imageUrl, setImageUrl] = useState(null);
 
     const fetchUserProfile = async (userId) => {
         try {
@@ -50,7 +55,6 @@ const Post = ({ texto, imagens, imagem, tipo, opcoes, id, del, user_id, view_use
         }
     };
 
-
     const formatDate = (isoDate) => {
         const date = new Date(isoDate);  // Converte a string ISO para um objeto Date
         const day = String(date.getDate()).padStart(2, '0'); // Obtém o dia e formata com dois dígitos
@@ -61,8 +65,8 @@ const Post = ({ texto, imagens, imagem, tipo, opcoes, id, del, user_id, view_use
     };
 
     useEffect(() => {
-        fetchUserProfile(user_id)
-    }, [user_id])
+        fetchUserProfile(user_id);
+    }, [user_id]);
 
     const openModal = (imageUri) => {
         setSelectedImage(imageUri);
@@ -82,13 +86,18 @@ const Post = ({ texto, imagens, imagem, tipo, opcoes, id, del, user_id, view_use
         return <Text>Carregando...</Text>;  // Exibe um carregando enquanto os dados não chegam
     }
 
+
+
     return (
         <View style={[styles.container]}>
 
             <View style={styles.header}>
 
                 <View style={styles.box}>
-                    <Image style={styles.img} source={require(`../assets/img/alunoFt.png`)} />
+                    <Image style={styles.img} 
+                    source={{ uri: imagens[0]}} 
+                    // source={require(`../assets/img/alunoFt.png`)} 
+                    />
 
                     <Text style={styles.nome}> {userProfile.nome} </Text>
                     <Text style={styles.time}> {formatDate(userProfile.created_at)} </Text>
@@ -100,19 +109,36 @@ const Post = ({ texto, imagens, imagem, tipo, opcoes, id, del, user_id, view_use
                     </Pressable>
                 ) : null}
 
-
-
             </View>
 
-            {tipo === 'cardapio' && imagem && (
+            {/* // Exibição do tipo Cardápio (Uma imagem) */}
+            {tipo === 'cardapio' && imagens && imagens.length > 0 && (
                 <View style={styles.cardapioConteiner}>
-                    <Pressable onPress={() => openModal(imagem)}>
-                        <Image source={{ uri: imagem }} style={styles.postImage} />
+                    <Pressable onPress={() => openModal(imagens[0])}>
+                        <Image source={{ uri: imagens[0] }} style={styles.postImage} />
                     </Pressable>
                 </View>
             )}
 
+            {/* // Exibição do tipo Sugestão (Até 4 imagens) */}
+            {tipo === 'sugestao' && (
+                <View style={styles.sugestaoConteiner}>
+                    <Text style={styles.postText}>{texto}</Text>
 
+                    <View style={styles.imagesContainer}>
+                        {imagens?.slice(0, 4).map((imageUri, index) => (
+                            <Pressable key={index} onPress={() => openModal(imageUri)}>
+                                <View style={styles.imageWrapper}>
+                                    <Image source={{ uri: imageUri }} style={styles.previewImage} />
+                                </View>
+                            </Pressable>
+                        ))}
+                    </View>
+                </View>
+            )}
+
+
+            {/* Exibição do tipo Enquete */}
             {tipo === 'enquete' && (
                 <View style={styles.enqueteConteiner}>
                     <Text style={styles.postText}>{texto}</Text>
@@ -126,25 +152,6 @@ const Post = ({ texto, imagens, imagem, tipo, opcoes, id, del, user_id, view_use
                     </View>
                 </View>
             )}
-
-            {tipo === 'sugestao' && (
-                <View style={styles.sugestaoConteiner}>
-                    <Text style={styles.postText}>{texto}</Text>
-
-                    <View style={styles.imagesContainer}>
-                        {imagens?.map((imageUri, index) => (
-                            <Pressable key={index} onPress={() => openModal(imageUri)}>
-                                <View style={styles.imageWrapper}>
-                                    <Image source={{ uri: imageUri }} style={styles.previewImage} />
-                                </View>
-                            </Pressable>
-
-                        ))}
-
-                    </View>
-                </View>
-            )}
-
 
             <Modal
                 visible={modalVisible}
@@ -170,7 +177,6 @@ const Post = ({ texto, imagens, imagem, tipo, opcoes, id, del, user_id, view_use
 const styles = StyleSheet.create({
     container: {
         padding: 10,
-
     },
     postText: {
         fontSize: 16,
@@ -178,14 +184,12 @@ const styles = StyleSheet.create({
     imagesContainer: {
         flexDirection: 'row',
         marginTop: 10,
-        justifyContent: `space-between`
+        justifyContent: 'space-between'
     },
-
     imageWrapper: {
         width: 70,
         height: 70,
-        marginBottom: 10, // Espaçamento abaixo de cada imagem
-
+        marginBottom: 10,
     },
     previewImage: {
         width: '100%',
@@ -193,7 +197,7 @@ const styles = StyleSheet.create({
         borderRadius: 5,
     },
     postImage: {
-        width: `100%`,
+        width: '100%',
         height: 200,
         marginRight: 10,
         marginBottom: 10,
@@ -218,17 +222,17 @@ const styles = StyleSheet.create({
     },
     img: {
         width: 40,
-        height: 40
+        height: 40,
     },
     header: {
-        flexDirection: `row`,
-        alignItems: `center`,
-        justifyContent: `space-between`,
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
         marginHorizontal: 5,
     },
     box: {
-        flexDirection: `row`,
-        alignItems: `center`,
+        flexDirection: 'row',
+        alignItems: 'center',
     },
     nome: {
         marginLeft: 5,
@@ -238,15 +242,15 @@ const styles = StyleSheet.create({
         marginLeft: 5,
         fontSize: 12,
         paddingTop: 1,
-        color: `#474747`
+        color: '#474747',
     },
     sugestaoConteiner: {
         marginHorizontal: 10,
-        marginTop: 10
+        marginTop: 10,
     },
     enqueteConteiner: {
         marginHorizontal: 10,
-        marginTop: 10
+        marginTop: 10,
     },
     cardapioConteiner: {
         marginTop: 10,
@@ -269,8 +273,6 @@ const styles = StyleSheet.create({
         right: 20,
         zIndex: 10,
     },
-
-
 });
 
 export default Post;

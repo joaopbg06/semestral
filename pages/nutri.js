@@ -68,6 +68,7 @@ function HomeScreen({ route }) {
         }
     };
 
+
     useEffect(() => {
         fetchPosts(); // Busca os posts ao montar o componente
     }, []);
@@ -149,7 +150,6 @@ function HomeScreen({ route }) {
                             <Post
                                 texto={item.texto}
                                 imagens={item.imagens}
-                                imagem={item.imagem}
                                 tipo={item.tipo}
                                 opcoes={item.opcoes}
                                 id={item.id}

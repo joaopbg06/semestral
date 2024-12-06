@@ -1,5 +1,20 @@
 import React, { useState } from 'react';
-import { Modal, View, Text, TextInput, Pressable, StyleSheet, Image, ScrollView } from 'react-native';
+import {
+    View,
+    Text,
+    StyleSheet,
+    Image,
+    TextInput,
+    TouchableOpacity,
+    KeyboardAvoidingView,
+    Keyboard,
+    TouchableWithoutFeedback,
+    Pressable,
+    FlatList,
+    Modal,
+    ScrollView,
+    ActivityIndicator
+} from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import DropDownPicker from 'react-native-dropdown-picker';
 import * as ImagePicker from 'expo-image-picker';
@@ -7,8 +22,7 @@ import Feather from '@expo/vector-icons/Feather';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 
 import { supabase } from '../supabase';
-import * as FileSystem from "expo-file-system";
-import { decode } from 'base64-arraybuffer';
+
 
 
 const Adicionar = ({ visible, onClose, user_id, fetchPosts }) => {
@@ -16,10 +30,11 @@ const Adicionar = ({ visible, onClose, user_id, fetchPosts }) => {
 
     // picker
 
+    const [successMessage, setSuccessMessage] = useState('');
     const [open, setOpen] = useState(false);
     const [value, setValue] = useState('opcao1');
     const [items, setItems] = useState([
-        { label: 'Sugestao', value: 'opcao1' },
+        { label: 'Sugestao', value: 'opca   o1' },
         { label: 'Enquetes', value: 'opcao2' },
         { label: 'Cardapio', value: 'opcao3' },
     ]);
@@ -104,7 +119,68 @@ const Adicionar = ({ visible, onClose, user_id, fetchPosts }) => {
     };
 
 
+
     // postar
+
+    const [error, setError] = useState(null); // Para armazenar erros caso aconteçam durante o upload
+
+    const convertUriToBase64 = (uri) => {
+        return new Promise((resolve, reject) => {
+            const xhr = new XMLHttpRequest();
+            xhr.onload = function () {
+                const reader = new FileReader();
+                reader.onloadend = function () {
+                    resolve(reader.result.split(',')[1]); // Retira o prefixo da string Base64
+                };
+                reader.readAsDataURL(xhr.response);
+            };
+            xhr.onerror = reject;
+            xhr.open('GET', uri, true);
+            xhr.responseType = 'blob';
+            xhr.send();
+        });
+    };
+
+    const uploadImageToSupabase = async (base64Image, fileName) => {
+        try {
+            setError(null); // Reseta qualquer erro anterior
+    
+            // Caminho do arquivo no Storage
+            const path = `imagens/${fileName}`;
+    
+            // Envia a imagem Base64 para o Supabase Storage
+            const { data, error } = await supabase.storage
+                .from('arquivos')  // Nome do seu bucket
+                .upload(path, base64Image, {
+                    cacheControl: '3600',
+                    upsert: false, // Ou 'true', dependendo se você deseja sobrescrever a imagem
+                });
+    
+            if (error) {
+                console.error('Erro ao fazer upload:', error);
+                setError('Erro ao enviar a imagem para o Supabase');
+                return;
+            }
+    
+            // URL pública da imagem após o upload
+            const imageUrl = `${supabase.storageUrl}/arquivos/imagens/${fileName}`;
+            
+            console.log('Imagem enviada com sucesso:', data);
+            setSuccessMessage('Imagem enviada com sucesso!');
+    
+            // Retorna a URL da imagem para salvar no banco
+            return imageUrl;
+    
+        } catch (err) {
+            console.error('Erro ao enviar a imagem:', err);
+            setError('Erro ao enviar a imagem');
+        }
+    };
+    
+
+
+
+
 
     const [texto, setTexto] = useState('');
     const [titulo, setTitulo] = useState(``)
@@ -136,45 +212,62 @@ const Adicionar = ({ visible, onClose, user_id, fetchPosts }) => {
                     texto: titulo,       // Campo "texto" usado como título da enquete
                     opcoes: options,     // Lista de opções da enquete
                     user_id: user_id,
-
                 };
                 isValid = true;
             } else {
                 alert('Por favor, preencha o título e todas as opções para a enquete.');
             }
-        } else if (value === 'opcao3') {
-            // Por enquanto não lida com a imagem
-            // alert('Função para "cardápio" ainda não implementada.');
-            // return;
+        } if (value === 'opcao3') {
+            try {
+                // 1. Converte a imagem para Base64
+                const base64Image = await convertUriToBase64(selectedImage);
+                console.log(base64Image)
 
-            const { data, error } = await supabase
-                .storage
-                .from('arquivos')
-                .upload('imagem/avatar1.png', decode('base64FileData'), {
-                    contentType: 'image/png'
-                })
-                console.log('foi')
+                // 2. Envia a imagem para o Supabase Storage e obtém a URL
+                const fileName = selectedImage.split('/').pop(); // Extraí o nome do arquivo da URI
+                const imageUrl = await uploadImageToSupabase(base64Image, fileName);
+                
+
+                if (!imageUrl) {
+                    console.error('Erro ao obter a URL da imagem');
+                    setError('Erro ao processar a imagem');
+                    return; // Retorna se houver erro no upload
+                }
+
+                // 3. Prepara os dados para enviar junto com a URL da imagem
+                dataToSubmit = {
+                    tipo: 'cardapio',      // Valor fixo para diferenciar os tipos
+                    imagens: [imageUrl],     // URL da imagem no Supabase
+                    user_id: user_id,      // ID do usuário
+                };
+
+                isValid = true; // Dados válidos para enviar
+
+            } catch (err) {
+                console.error('Erro no processo completo:', err);
+                setError('Erro ao processar a imagem e dados');
+            }
         }
 
         // Envia o objeto para o Supabase se os dados estiverem válidos
         if (isValid && dataToSubmit) {
             try {
-                // Insere os dados na tabela "post" do Supabase
+                // Envia os dados para a tabela 'post' no Supabase
                 const { data, error } = await supabase
                     .from('post')
                     .insert([dataToSubmit]);
 
                 if (error) {
                     console.error('Erro ao inserir dados:', error.message);
-                    alert('Ocorreu um erro ao enviar os dados. Tente novamente.');
+                    setError('Ocorreu um erro ao enviar os dados. Tente novamente.');
                 } else {
                     alert('Dados enviados com sucesso!');
-                    await fetchPosts()
+                    await fetchPosts(); // Atualiza a lista de posts, se necessário
                     onClose(); // Fecha o modal após o envio
                 }
             } catch (err) {
                 console.error('Erro inesperado:', err);
-                alert('Erro inesperado ao enviar os dados.');
+                setError('Erro inesperado ao enviar os dados.');
             }
         }
     };
