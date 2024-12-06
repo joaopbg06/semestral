@@ -17,7 +17,7 @@ import { Ionicons } from '@expo/vector-icons';
 import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
 
 
-const ModalAluno = ({ contato, onClose }) => {
+const ModalAluno = ({ contato, onClose,  }) => {
 
     return (
 
@@ -52,7 +52,7 @@ const ModalAluno = ({ contato, onClose }) => {
                             <Ionicons name={'mail'} size={24} color={'#000'} />
                             <Text style={styles.desc}> Email </Text>
                         </View>
-                        <Text style={styles.assunto}> {contato.Email} </Text>
+                        <Text style={styles.assunto}> {contato.email} </Text>
                     </View>
                 </View>
 

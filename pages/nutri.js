@@ -1,5 +1,3 @@
-
-
 import React, { useEffect, useState } from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Ionicons } from '@expo/vector-icons';
@@ -17,7 +15,8 @@ import {
     Pressable,
     FlatList,
     Modal,
-    ScrollView
+    ScrollView,
+    ActivityIndicator
 } from 'react-native';
 
 import Adicionar from '../components/adicionar'
@@ -385,62 +384,79 @@ function Chat({ route }) {
 }
 
 
-function Laudo() {
+const Laudo = () => {
+    const [pesquisa, setPesquisa] = useState(''); // Para o filtro de pesquisa
+    const [laudos, setLaudos] = useState([]); // Estado para armazenar os dados da tabela `laudo`
+    const [loading, setLoading] = useState(true); // Estado para indicar carregamento
+    const [modalVisible, setModalVisible] = useState(false); // Controle do modal
+    const [selectedContato, setSelectedContato] = useState(null); // Contato selecionado
 
-    const [pesquisa, setPesquisa] = useState('');
-
-
-
-
-
-    const data = [
-        { id: 1, nome: 'Aluno1', Email: 'nome.sobrenome@portalsesisp.org.br', RM: '1234', telefone: '(+55) 11 12345-5678' },
-        { id: 2, nome: 'Aluno2', Email: 'nome.sobrenome@portalsesisp.org.br', RM: '1234', telefone: '(+55) 11 12345-5678' },
-        { id: 3, nome: 'Aluno3', Email: 'nome.sobrenome@portalsesisp.org.br', RM: '1234', telefone: '(+55) 11 12345-5678' },
-        { id: 4, nome: 'Aluno4', Email: 'nome.sobrenome@portalsesisp.org.br', RM: '1234', telefone: '(+55) 11 12345-5678' },
-        { id: 5, nome: 'Aluno5', Email: 'nome.sobrenome@portalsesisp.org.br', RM: '1234', telefone: '(+55) 11 12345-5678' },
-        { id: 6, nome: 'Aluno6', Email: 'nome.sobrenome@portalsesisp.org.br', RM: '1234', telefone: '(+55) 11 12345-5678' },
-        { id: 7, nome: 'Aluno7', Email: 'nome.sobrenome@portalsesisp.org.br', RM: '1234', telefone: '(+55) 11 12345-5678' },
-        { id: 8, nome: 'Aluno8', Email: 'nome.sobrenome@portalsesisp.org.br', RM: '1234', telefone: '(+55) 11 12345-5678' },
-        { id: 9, nome: 'Aluno9', Email: 'nome.sobrenome@portalsesisp.org.br', RM: '1234', telefone: '(+55) 11 12345-5678' },
-    ];
-
-    const [filteredData, setFilteredData] = useState(data); // Inicializar com todos os dados
-
-
+    // Função para lidar com a mudança do campo de pesquisa
     const handleInputChange = (text) => {
         setPesquisa(text);
-        console.log('Input na pesquisa:', text); // Para visualizar a entrada atual
-        filtrarDados(text)
     };
 
+    // Função para buscar os laudos e os perfis associados
+    const fetchLaudos = async () => {
+        setLoading(true); // Ativa o indicador de carregamento
 
-    const filtrarDados = (texto) => {
-        if (texto === '') {
-            setFilteredData(data); // Reseta para todos os dados se o campo de pesquisa estiver vazio
-        } else {
-            const resultados = data.filter((item) =>
-                item.nome.toLowerCase().includes(texto.toLowerCase()) || // Filtra por nome
-                item.Email.toLowerCase().includes(texto.toLowerCase()) // Filtra por email (ou qualquer outro campo)
-            );
-            setFilteredData(resultados); // Atualiza com os resultados filtrados
+        // Buscar todos os laudos
+        const { data: laudosData, error: laudosError } = await supabase
+            .from('laudo') // Nome da tabela
+            .select('*'); // Seleciona todas as colunas
+
+        if (laudosError) {
+            console.error('Erro ao buscar laudos:', laudosError.message);
+            setLoading(false);
+            return;
         }
+
+        // Para cada laudo, buscamos o perfil correspondente ao user_id
+        const laudosComPerfis = await Promise.all(
+            laudosData.map(async (laudo) => {
+                const { data: profileData, error: profileError } = await supabase
+                    .from('profiles') // Nome da tabela de perfis
+                    .select('*') // Seleciona todas as colunas
+                    .eq('id', laudo.user_id) // Filtra pelo user_id do laudo
+                    .single(); // Retorna apenas um perfil
+
+                if (profileError) {
+                    console.error('Erro ao buscar perfil para o laudo:', profileError.message);
+                    return { ...laudo, profile: null }; // Caso ocorra erro, coloca `null` para o perfil
+                }
+
+                // Retorna o laudo com as informações do perfil associadas
+                return { ...laudo, profile: profileData };
+            })
+        );
+
+        setLaudos(laudosComPerfis); // Atualiza o estado com os laudos com os perfis associados
+        setLoading(false); // Desativa o indicador de carregamento
     };
 
+    useEffect(() => {
+        fetchLaudos();
+    }, []);
 
-    const [modalVisible, setModalVisible] = useState(false);  // Controle de exibição do modal
-    const [selectedContato, setSelectedContato] = useState(null);
+    // Função para filtrar os laudos com base no nome do perfil
+    const filteredLaudos = laudos.filter((laudo) => {
+        const nome = laudo.profile?.nome || ''; // Garantir que profile não seja null ou undefined
+        return nome.toLowerCase().includes(pesquisa.toLowerCase()); // Filtro insensível a maiúsculas/minúsculas
+    });
 
-    const handlePressContato = (contato) => {
-        setSelectedContato(contato);  // Salva o contato selecionado
-        setModalVisible(true);  // Exibe o modal
-    };
+    if (loading) {
+        return (
+            <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+                <ActivityIndicator size="large" color="#0000ff" />
+            </View>
+        );
+    }
 
     return (
         <View style={{ flex: 1, alignItems: 'center', justifyContent: 'flex-start', backgroundColor: `#fff` }}>
 
             <View style={laudo.header}>
-                <Image style={laudo.logo} source={require('../assets/img/logo.png')}></Image>
+                <Image style={laudo.logo} source={require('../assets/img/logo.png')} />
                 <View style={laudo.linha1}></View>
 
                 <View style={laudo.pesquisa}>
@@ -450,36 +466,27 @@ function Laudo() {
                         onChangeText={handleInputChange}
                         placeholder="Pesquise aqui..."
                     />
-
                     <Ionicons name={"search-sharp"} size={24} color={"#000"} />
                 </View>
 
                 <View style={laudo.linha2}></View>
             </View>
 
-
+            {/* Aqui aplicamos o filtro nos laudos */}
             <FlatList
                 style={{ flex: 1, width: '90%' }}
                 keyExtractor={(item) => String(item.id)}
-                data={filteredData} // Use os dados filtrados
-                renderItem={({ item }) => <Contato data={item} onPress={() => handlePressContato(item)} />}
-
+                data={filteredLaudos}  // Agora estamos passando os laudos filtrados
+                renderItem={({ item }) => (
+                    <Contato data={item} /> // Passando o item completo, que inclui a propriedade 'profile'
+                )}
             />
-
-            <Modal
-                visible={modalVisible}
-                animationType='fade'
-                onRequestClose={() => setModalVisible(false)}  // Fecha o modal ao pressionar o botão de voltar
-            >
-                <LaudoAluno
-                    contato={selectedContato}
-                    onClose={() => setModalVisible(false)}  // Função para fechar o modal
-                />
-            </Modal>
 
         </View>
     );
-}
+};
+
+
 
 //bottons tab
 
